@@ -1,0 +1,24 @@
+name: JawaChat
+main: jawamaster.jawachat.JawaChat
+version: 0.3.0a
+commands:
+  setnick:
+    description: Used to set the player's nick name
+    usage: /setnick <playername> [player nick name]
+    permission: jawachat.setnick
+  settag:
+    description: Used to give a player a tag.
+    usage: /settag <playername> [tag]
+    permission: jawachat.settag
+  setstar:
+    description: Used to give a player a red or green star preceeding their name.
+    usage: /setstar <playername> [r or g]
+    permission: jawachat.setstar
+#  onme:
+#    description: Used to send a me message.
+#    usage: /me <your message>
+#    permission: jawachat.me
+  pm:
+    description: Send a private message to a player
+    usage: /pm <player> <Your message>
+    permission: jawachat.pm

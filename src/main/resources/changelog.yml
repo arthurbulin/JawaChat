@@ -1,0 +1,13 @@
+## YAML Template.
+---
+changes:
+    0.3.0a:
+        new:
+            - Op chat
+            - Display names are now set
+        fixed:
+            - me should work now
+        changes:
+            - Names are no longer stored in a hash and are now forced into the player's display name
+    0.2.1a:
+        - fixed pm display name
