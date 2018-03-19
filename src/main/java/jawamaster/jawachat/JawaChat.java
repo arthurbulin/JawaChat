@@ -28,6 +28,7 @@ import jawamaster.jawachat.listeners.OnPlayerRankChange;
 import jawamaster.jawachat.listeners.PlayerChat;
 import jawamaster.jawachat.listeners.PlayerJoin;
 import jawamaster.jawachat.listeners.PlayerQuit;
+import jawamaster.jawachat.listeners.OnPluginMessage;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
 import org.bukkit.configuration.Configuration;
@@ -91,6 +92,10 @@ public class JawaChat extends JavaPlugin {
         //playerCompiledName = new HashMap();
         opsOnline = new HashSet();
         //rankColorMap = new HashMap();
+        
+        //Attempt BungeeIntegration
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new OnPluginMessage());
         
         //Declear and intiate Commands
         this.getCommand("setnick").setExecutor(new SetNick());
