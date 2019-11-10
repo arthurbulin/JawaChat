@@ -5,12 +5,14 @@
  */
 package jawamaster.jawachat.listeners;
 
-import jawamaster.jawachat.JawaChat;
-import org.bukkit.Bukkit;
-import org.bukkit.Server;
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteStreams;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
 /**
@@ -21,8 +23,21 @@ public class OnPluginMessage implements PluginMessageListener {
     
     @Override
     public void onPluginMessageReceived(String channel, Player player, byte[] message){
-        if ("BungeeCord".equals(channel)) {
-            JawaChat.getPlugin().getServer().getPluginManager().callEvent(new AsyncPlayerChatEvent(true, player, Server.BROADCAST_CHANNEL_USERS, JawaChat.getPlugin().getServer().getOnlinePlayers()));
+        if (channel.startsWith("JawaChat-")) {
+            ByteArrayDataInput in = ByteStreams.newDataInput(message);
+            String subChannel = in.readUTF();
+            short len = in.readShort();
+            
+            byte[] msgbytes = new byte[len];
+            in.readFully(msgbytes);
+            
+            DataInputStream msgin = new DataInputStream(new ByteArrayInputStream(msgbytes));
+            try {
+                String somedata = msgin.readUTF();
+                System.out.println("Received from " + channel + ": " + somedata);
+            } catch (IOException ex) {
+                Logger.getLogger(OnPluginMessage.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
     }

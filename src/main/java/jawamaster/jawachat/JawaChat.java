@@ -52,6 +52,7 @@ public class JawaChat extends JavaPlugin {
     public static String eshost;
     public static int esport;
     public static RestHighLevelClient restClient;
+    public static String ServerName;
     
     //HashMaps for player controls
     public static Map<UUID, String> playerRanks;
@@ -94,8 +95,8 @@ public class JawaChat extends JavaPlugin {
         //rankColorMap = new HashMap();
         
         //Attempt BungeeIntegration
-        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-        this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new OnPluginMessage());
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "JawaChat");
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, "JawaChat", new OnPluginMessage());
         
         //Declear and intiate Commands
         this.getCommand("setnick").setExecutor(new SetNick());
@@ -153,7 +154,8 @@ public class JawaChat extends JavaPlugin {
         config = this.getConfig();
         debug = (Boolean) config.get("debug");
         eshost = (String) config.get("eshost");
-        esport = (int) config.get("esport"); 
+        esport = (int) config.get("esport");
+        ServerName = (String) config.get("servername");
         
         final File rankColors =  new File(this.getDataFolder() + "/rankcolors.yml");
         Yaml yaml = new Yaml();
