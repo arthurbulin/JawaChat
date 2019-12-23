@@ -1,0 +1,10 @@
+## YAML Template.
+---
+guest: $f
+member: $a
+regular: $b
+trusted: $3
+trainee: $1
+admin: $c
+superadmin: $4
+owner: $5

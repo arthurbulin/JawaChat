@@ -25,9 +25,10 @@ public class PlayerQuit implements Listener{
         
         //if (JawaChat.playerCompiledName.containsKey(uuid)) JawaChat.playerCompiledName.remove(uuid);
         if (JawaChat.playerNicks.containsKey(uuid)) JawaChat.playerNicks.remove(uuid);
-        if (JawaChat.playerRanks.containsKey(uuid)) JawaChat.playerRanks.remove(uuid);
+        //if (JawaChat.playerRanks.containsKey(uuid)) JawaChat.playerRanks.remove(uuid);
         if (JawaChat.playerStars.containsKey(uuid)) JawaChat.playerStars.remove(uuid);
         if (JawaChat.playerTags.containsKey(uuid)) JawaChat.playerTags.remove(uuid);
+        if (JawaChat.playerCompiledName.containsKey(uuid)) JawaChat.playerCompiledName.remove(uuid);
         
     }
 }
