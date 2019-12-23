@@ -6,22 +6,25 @@
 package jawamaster.jawachat.listeners;
 
 import java.io.IOException;
-import jawamaster.jawachat.handlers.ESDataHandler;
+import jawamaster.jawachat.handlers.FormattingHandler;
+import jawamaster.jawapermissions.handlers.ESHandler;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
+import jawamaster.jawapermissions.events.PlayerInfoLoaded;
 
 /**
  *
  * @author Arthur Bulin
  */
-public class PlayerJoin implements Listener{
+public class PlayerInfoLoadedListener implements Listener{
     
     @EventHandler
-    public static void PlayerJoin(PlayerJoinEvent event) throws IOException{
+    public static void PlayerInfoLoadedListener(PlayerInfoLoaded event) throws IOException{
         Player player = event.getPlayer();
-        ESDataHandler.compilePlayerNameJoin(player);
+        FormattingHandler.compilePlayerNameOnJoin(player, event.getPlayerDataObject());
+        //FormattingHandler.compilePlayerNameOnJoin(player, event.getPlayerDataObject());
+        //ESHandler.compilePlayerNameJoin(player);
         //JawaPermissions.plugin.getServer().getPluginManager().subscribeToPermission("jawachat.opchat", player);
     }
 }
