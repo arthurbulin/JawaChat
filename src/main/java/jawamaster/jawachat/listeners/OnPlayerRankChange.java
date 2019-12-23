@@ -23,8 +23,8 @@ public class OnPlayerRankChange implements Listener {
         Player target = e.getPlayer();
         String rank = e.getRank();
         
-        //JawaChat.playerRanks.put(target.getUniqueId(), rank);
+        JawaChat.playerRanks.put(target.getUniqueId(), rank);
         
-        //FormattingHandler.compilePlayerName(target);
+        FormattingHandler.compilePlayerName(target);
     }
 }

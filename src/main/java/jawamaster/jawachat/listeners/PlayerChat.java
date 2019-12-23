@@ -11,7 +11,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import jawamaster.jawachat.JawaChat;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,7 +26,7 @@ public class PlayerChat implements Listener {
     public static void PlayerChat(AsyncPlayerChatEvent e) throws IOException {
         Player player = e.getPlayer();
 //        String format = JawaChat.playerCompiledName.get(player.getUniqueId()) + ": %2$s";
-        String format = player.getDisplayName() + ChatColor.WHITE + ": %2$s";
+        String format = player.getDisplayName() + ": %2$s";
         e.setFormat(format);
         
         //This should forward a plugin message to other bungeecord servers running 
