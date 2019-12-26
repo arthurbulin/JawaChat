@@ -1,6 +1,6 @@
 name: JawaChat
 main: jawamaster.jawachat.JawaChat
-version: 0.3.0a
+version: 1.0
 commands:
   setnick:
     description: Used to set the player's nick name
