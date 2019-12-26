@@ -32,8 +32,8 @@ public class PrivateMessage implements CommandExecutor {
         
 //        target.sendMessage(ChatColor.DARK_GRAY + "[" + JawaChat.playerCompiledName.get(player.getUniqueId()) + ChatColor.DARK_GRAY + "> you]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
 //        player.sendMessage(ChatColor.DARK_GRAY + "[You > " + JawaChat.playerCompiledName.get(target.getUniqueId()) + ChatColor.DARK_GRAY + "]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
-        target.sendMessage(ChatColor.DARK_GRAY + "[" + player.getDisplayName() + ChatColor.DARK_GRAY + " > you]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
-        player.sendMessage(ChatColor.DARK_GRAY + "[You > " + target.getDisplayName() + ChatColor.DARK_GRAY + "]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
+        target.sendMessage(ChatColor.DARK_GRAY + "[" + ChatColor.translateAlternateColorCodes('&', player.getDisplayName()) + ChatColor.DARK_GRAY + " > you]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
+        player.sendMessage(ChatColor.DARK_GRAY + "[You > " + ChatColor.translateAlternateColorCodes('&', target.getDisplayName()) + ChatColor.DARK_GRAY + "]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
         
         return true;
     }
