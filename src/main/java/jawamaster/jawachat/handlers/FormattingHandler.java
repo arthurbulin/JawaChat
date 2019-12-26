@@ -5,7 +5,6 @@
  */
 package jawamaster.jawachat.handlers;
 
-import java.util.UUID;
 import jawamaster.jawachat.JawaChat;
 import jawamaster.jawapermissions.JawaPermissions;
 import jawamaster.jawapermissions.PlayerDataObject;
@@ -90,22 +89,12 @@ public class FormattingHandler {
         String displayName = "";
         
         System.out.println("Star: "+ star + "tag: " + tag + "nick: "+nickName);
-        
-        String rank = JawaPermissions.playerRank.get(target.getUniqueId());
-        System.out.println("rank: " + rank);
-        
-        String color = JawaChat.rankColorMap.get(rank);
-        System.out.println("color: "+color);
-        
-        System.out.println(JawaChat.rankColorMap);
-        
-        ChatColor cc = ChatColor.getByChar(color.charAt(0));
-        System.out.println("chat color: " + cc + "test");
-        
+
         if (!star.equals("")) displayName += star;
-        if (!tag.equals("")) displayName += tag;
-        if (!nickName.equals("")) displayName += " " + nickName;
-        else displayName += cc + " " + target.getName();
+        if (!tag.equals("")) displayName += ChatColor.translateAlternateColorCodes('$', tag) + " ";
+        
+        if (!nickName.equals("")) displayName += ChatColor.translateAlternateColorCodes('$', nickName);
+        else displayName += ChatColor.getByChar(String.valueOf(JawaChat.rankColorMap.get(JawaPermissions.playerRank.get(target.getUniqueId()))).charAt(0)) + target.getName();
 //        else displayName += ChatColor.getByChar(JawaChat.rankColorMap.get(JawaChat.playerRanks.get(target.getUniqueId()))) + target.getName();
         
         target.setDisplayName(displayName);
@@ -121,9 +110,14 @@ public class FormattingHandler {
         //Player listname compilation
         String listName = "";
         if (!JawaChat.playerNicks.containsKey(target.getUniqueId())){
-            listName = ChatColor.getByChar(JawaChat.rankColorMap.get(JawaPermissions.playerRank.get(target.getUniqueId()))) + " " + target.getName();
+            listName = ChatColor.getByChar(JawaChat.rankColorMap.get(JawaPermissions.playerRank.get(target.getUniqueId()))) + target.getName();
         } else {
-            listName = ChatColor.getByChar(JawaChat.rankColorMap.get(JawaPermissions.playerRank.get(target.getUniqueId()))) + JawaChat.playerNicks.get(target.getUniqueId()) + ChatColor.WHITE + "> " + target.getName();
+            listName = ChatColor.getByChar(
+                    String.valueOf(JawaChat.rankColorMap.get(JawaPermissions.playerRank.get(target.getUniqueId())))) + 
+                    ChatColor.translateAlternateColorCodes('$', JawaChat.playerNicks.get(target.getUniqueId())) + 
+                    ChatColor.WHITE + "> " + 
+                    ChatColor.getByChar(String.valueOf(JawaChat.rankColorMap.get(JawaPermissions.playerRank.get(target.getUniqueId())))) + 
+                    target.getName();
         }
 
         target.setPlayerListName(listName);
