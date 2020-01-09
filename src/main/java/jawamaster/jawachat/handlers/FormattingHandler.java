@@ -47,7 +47,7 @@ public class FormattingHandler {
     
     public static void compilePlayerNameOnJoin(Player target, PlayerDataObject pdObject) {
         //Store player data
-        pdObject.spillData();
+        //pdObject.spillData();
         storePlayerNameData(target, pdObject);
         compilePlayerName(target, pdObject);
         compileListName(target);
@@ -62,16 +62,23 @@ public class FormattingHandler {
         storePlayerNameData(target, pdObject.getStar(), pdObject.getTag(), pdObject.getNickName());
     }
     
-    /** Commit all values needed to build a player's in-game name to maps.
+    /** Commit all values needed to build a player's in-game name to maps, or if
+     * they are "" remove them from the maps.
      * @param target
-     * @param starData
+     * @param star
      * @param tag
      * @param nickName 
      */
     public static void storePlayerNameData(Player target, String star, String tag, String nickName) {
+        //If != to "" put it in there, else if it == "" remove it if it exists
         if (!star.equals("")) JawaChat.playerStars.put(target.getUniqueId(), star);
+        else if (star.equals("") && JawaChat.playerStars.containsKey(target.getUniqueId())) JawaChat.playerStars.remove(target.getUniqueId());
+        
         if (!tag.equals("")) JawaChat.playerTags.put(target.getUniqueId(), tag);
+        else if (tag.equals("") && JawaChat.playerTags.containsKey(target.getUniqueId())) JawaChat.playerTags.remove(target.getUniqueId());
+        
         if (!nickName.equals("")) JawaChat.playerNicks.put(target.getUniqueId(), nickName);
+        else if (nickName.equals("") && JawaChat.playerNicks.containsKey(target.getUniqueId())) JawaChat.playerNicks.remove(target.getUniqueId());
     }
     
     public static void compilePlayerName(Player target, PlayerDataObject pdObject){
@@ -103,14 +110,14 @@ public class FormattingHandler {
     }
     
     /** Compiles the player listname from the given information.
-     * @param target
-     * @param pdObject 
+     * @param target 
      */
     public static void compileListName(Player target){
         //Player listname compilation
         String listName = "";
         if (!JawaChat.playerNicks.containsKey(target.getUniqueId())){
-            listName = ChatColor.getByChar(JawaChat.rankColorMap.get(JawaPermissions.playerRank.get(target.getUniqueId()))) + target.getName();
+            listName = ChatColor.getByChar(
+                    String.valueOf(JawaChat.rankColorMap.get(JawaPermissions.playerRank.get(target.getUniqueId())))) + target.getName();
         } else {
             listName = ChatColor.getByChar(
                     String.valueOf(JawaChat.rankColorMap.get(JawaPermissions.playerRank.get(target.getUniqueId())))) + 

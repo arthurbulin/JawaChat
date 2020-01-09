@@ -5,7 +5,6 @@
  */
 package jawamaster.jawachat.listeners;
 
-import jawamaster.jawachat.JawaChat;
 import jawamaster.jawachat.handlers.FormattingHandler;
 import jawamaster.jawapermissions.events.PlayerRankChange;
 import org.bukkit.entity.Player;
@@ -21,10 +20,10 @@ public class OnPlayerRankChange implements Listener {
     @EventHandler
     public static void OnPlayerRankChange(PlayerRankChange e){
         Player target = e.getPlayer();
-        String rank = e.getRank();
+        //String rank = e.getRank();
         
         //JawaChat.playerRanks.put(target.getUniqueId(), rank);
         
-        //FormattingHandler.compilePlayerName(target);
+        FormattingHandler.recompilePlayerName(target);
     }
 }

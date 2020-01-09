@@ -89,7 +89,21 @@ public class SetNick implements CommandExecutor {
                 JawaChat.playerNicks.remove(targetUUID);
             }
             FormattingHandler.recompilePlayerName(target);
+            
+            if (((Player) commandSender).getUniqueId().equals(target.getUniqueId()) ) {
+                commandSender.sendMessage(ChatColor.GREEN + " > Your nickname has been set to: " + nick);
+            } else {
+                commandSender.sendMessage(ChatColor.GREEN + " > " + target.getName() + " has been set to " + nick);
+                target.sendMessage(ChatColor.GREEN + " > Your nickname has been set to " + nick );
+            }
+            
+            System.out.println("[JawaChat]" + commandSender.getName() + " has set " + targetUUID.toString() + "'s nickname to " + nick);
+        } else {
+            System.out.println(commandSender.getName() + " has set " + targetUUID.toString() + "'s nickname to " + nick);
+            commandSender.sendMessage(ChatColor.GREEN + " > " + arg3[0] + " has been set to " + nick);
         }
+        
+        
 
         return true;
     }

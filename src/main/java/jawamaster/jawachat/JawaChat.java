@@ -9,7 +9,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,7 +26,6 @@ import jawamaster.jawachat.listeners.OnPlayerRankChange;
 import jawamaster.jawachat.listeners.PlayerChat;
 import jawamaster.jawachat.listeners.PlayerInfoLoadedListener;
 import jawamaster.jawachat.listeners.PlayerQuit;
-import jawamaster.jawachat.listeners.OnPluginMessage;
 import jawamaster.jawapermissions.handlers.ESHandler;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
@@ -36,8 +34,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -112,6 +108,7 @@ public class JawaChat extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerChat(), this);
         getServer().getPluginManager().registerEvents(new OnBukkitMe(), this);
         getServer().getPluginManager().registerEvents(new OnOpChat(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerRankChange(), this);
 
     }
     

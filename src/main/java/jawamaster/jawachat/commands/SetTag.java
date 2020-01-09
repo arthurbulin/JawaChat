@@ -77,10 +77,21 @@ public class SetTag implements CommandExecutor {
         JSONObject tagChange = PlayerDataHandler.createPlayerTagChangeData(tag);
         ESHandler.asyncUpdateData(targetUUID.toString(), tagChange);
         
-        if (!remove) JawaChat.playerTags.put(targetUUID, tag);
-        else JawaChat.playerTags.remove(targetUUID);
+        // TODO FIXME clean up these messages. see setnick
+        if (online) {
+            FormattingHandler.recompilePlayerName(target);
+            if (!remove) {
+                JawaChat.playerTags.put(targetUUID, tag);
+            } else {
+                JawaChat.playerTags.remove(targetUUID);
+            }
+        }
+        if (!remove) {
+            commandSender.sendMessage(ChatColor.GREEN + " > " + arg3[0] + "'s tag has been changed to " + ChatColor.translateAlternateColorCodes('$', tag));
+        } else {
+            commandSender.sendMessage(ChatColor.GREEN + " > " + arg3[0] + "'s tag has been removed.");
+        }
         
-        if (online) FormattingHandler.recompilePlayerName(target);
         //rebuild player name
      
      return true;
