@@ -5,25 +5,21 @@
  */
 package jawamaster.jawachat.listeners;
 
+import java.util.UUID;
 import jawamaster.jawachat.handlers.FormattingHandler;
-import jawamaster.jawapermissions.events.PlayerRankChange;
-import org.bukkit.entity.Player;
+import net.jawasystems.jawacore.events.PlayerRankChange;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-/**
- *
+/** This listens for a PlayerRankChange event and triggers the FormattingHandler to 
+ * recompile the user's name based on the new rank.
  * @author Arthur Bulin
  */
 public class OnPlayerRankChange implements Listener {
     
     @EventHandler
     public static void OnPlayerRankChange(PlayerRankChange e){
-        Player target = e.getPlayer();
-        //String rank = e.getRank();
-        
-        //JawaChat.playerRanks.put(target.getUniqueId(), rank);
-        
+        UUID target = e.getUUID();
         FormattingHandler.recompilePlayerName(target);
     }
 }

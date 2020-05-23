@@ -1,6 +1,9 @@
 name: JawaChat
 main: jawamaster.jawachat.JawaChat
-version: 1.0
+description: Controls chat functions and supplies various administrative commands.
+version: 2.0
+api-version: 1.15
+depends: JawaPermissions, JawaCore
 commands:
   setnick:
     description: Used to set the player's nick name
@@ -14,11 +17,28 @@ commands:
     description: Used to give a player a red or green star preceeding their name.
     usage: /setstar <playername> [r or g]
     permission: jawachat.setstar
-#  onme:
-#    description: Used to send a me message.
-#    usage: /me <your message>
-#    permission: jawachat.me
   pm:
     description: Send a private message to a player
     usage: /pm <player> <Your message>
     permission: jawachat.pm
+  mute:
+    description: "Allows an admin to mute a player"
+    usage: "/mute <player>"
+    permission: jawachat.mute
+    
+permissions:
+  jawachat.mute:
+    description: "Allows access to the /mute command"
+    default: op
+  jawachat.pm:
+    description: "Allows a player to private message others"
+    default: true
+  jawachat.setstar:
+    description: "Allows an admin to set a star on the player specified"
+    default: op
+  jawachat.settag:
+    description: "Allows an admin to set a tag on the player specified"
+    default: op
+  jawachat.setnick:
+    description: "Allows an admin to set the nickname of the player specified"
+    default: op

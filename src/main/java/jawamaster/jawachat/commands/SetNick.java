@@ -6,13 +6,9 @@
 package jawamaster.jawachat.commands;
 
 import java.util.Arrays;
-import java.util.UUID;
-import jawamaster.jawachat.JawaChat;
 import jawamaster.jawachat.handlers.FormattingHandler;
-import jawamaster.jawapermissions.PlayerDataObject;
-import jawamaster.jawapermissions.handlers.ESHandler;
-import jawamaster.jawapermissions.utils.ESRequestBuilder;
-import org.bukkit.Bukkit;
+import net.jawasystems.jawacore.PlayerManager;
+import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -30,80 +26,40 @@ public class SetNick implements CommandExecutor {
     public boolean onCommand(CommandSender commandSender, Command arg1, String arg2, String[] arg3) {
         String usage = "/nick <playername> <nickname>" +
                 "/nick <playername>";
-        PlayerDataObject pdObject;
-        boolean remove = false;
-        boolean online;
-        UUID targetUUID;
-        String nick = "";
+        PlayerDataObject pdObject = PlayerManager.getPlayerDataObject(arg3[0]);
+        if (pdObject == null){
+            commandSender.sendMessage(ChatColor.RED + " > Error: That Player wasn't found either online or offline. Try using the player's actual minecraft name and not their nickname.");
+            return true;
+        }
+
         if (arg3 == null || arg3.length == 0){
           return true;  
         } else if (arg3.length == 1){
-            remove = true;
+            pdObject.setNick("");
+            pdObject.sendMessageIf(ChatColor.GREEN + " > Your nick name has been removed.");
+            if (!pdObject.equals(((Player) commandSender))) commandSender.sendMessage(ChatColor.GREEN + " > " + pdObject.getName() + "'s nickname has been removed.");
         } else if (arg3.length > 1) {
-            remove = false;
-            nick = String.join(" ", Arrays.asList(Arrays.copyOfRange(arg3, 1, arg3.length)));
-            System.out.println("nick1: " + nick);
-        }        
+            pdObject.setNick(String.join(" ", Arrays.asList(Arrays.copyOfRange(arg3, 1, arg3.length))));
+            //If player is online send message
+            pdObject.sendMessageIf(ChatColor.GREEN + " > Your nickname has been set to: " + ChatColor.translateAlternateColorCodes('&', String.join(" ", Arrays.asList(Arrays.copyOfRange(arg3, 1, arg3.length)))));
 
-//###############################################################################
-//# Assess offline status for target
-//###############################################################################
-        //Check if target is offline
-//        Player target = JawaChat.plugin.getServer().getPlayer(arg3[0]);
-        Player target = Bukkit.getPlayer(arg3[0]);
-
-        //If player is online
-        if (target != null) {
-            targetUUID = target.getUniqueId();
-            online = true;
-            pdObject = new PlayerDataObject(targetUUID);
-            pdObject = ESHandler.runMultiIndexSearch(ESRequestBuilder.buildSingleMultiSearchRequest("players", "_id", targetUUID.toString()), pdObject);
-        } else { //if player is offline
-            online = false;
-            pdObject = ESHandler.findOfflinePlayer(arg3[0], true);
-            if ( pdObject == null) {
-                commandSender.sendMessage(ChatColor.RED + " > ERROR: " + arg3[0] + " was not found! Please check the player name!");
-                return true;//Short circuit in the event the player is not found
+            //If the player is not the commandsender let the commandsender know what is being done
+            if (!pdObject.equals((Player) commandSender)) {
+                commandSender.sendMessage(ChatColor.GREEN + " > " + pdObject.getName() + " has been set to " + ChatColor.translateAlternateColorCodes('&', String.join(" ", Arrays.asList(Arrays.copyOfRange(arg3, 1, arg3.length)))));
             }
-            targetUUID = UUID.fromString(pdObject.getPlayerUUID());
         }
-        
+
+        //If the player is onlie rebuild their name
+        if (pdObject.isOnline()) {
+            FormattingHandler.recompilePlayerName(pdObject.getPlayer());
+        }
+
 //###############################################################################
 //# Check Immunity for the command
 //###############################################################################
         //TODO check immunity
-
         
-//###############################################################################
-//# Build Update
-//###############################################################################
-        
-        pdObject.addUpdateData();
-        pdObject.updateNick(nick);
-        pdObject.triggerAsyncUpdate();
-        
-        if (online) {
-            if (!remove) {
-                JawaChat.playerNicks.put(targetUUID, nick);
-            } else {
-                JawaChat.playerNicks.remove(targetUUID);
-            }
-            FormattingHandler.recompilePlayerName(target);
-            
-            if (((Player) commandSender).getUniqueId().equals(target.getUniqueId()) ) {
-                commandSender.sendMessage(ChatColor.GREEN + " > Your nickname has been set to: " + nick);
-            } else {
-                commandSender.sendMessage(ChatColor.GREEN + " > " + target.getName() + " has been set to " + nick);
-                target.sendMessage(ChatColor.GREEN + " > Your nickname has been set to " + nick );
-            }
-            
-            System.out.println("[JawaChat]" + commandSender.getName() + " has set " + targetUUID.toString() + "'s nickname to " + nick);
-        } else {
-            System.out.println(commandSender.getName() + " has set " + targetUUID.toString() + "'s nickname to " + nick);
-            commandSender.sendMessage(ChatColor.GREEN + " > " + arg3[0] + " has been set to " + nick);
-        }
-        
-        
+   
 
         return true;
     }

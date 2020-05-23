@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>jawamaster</groupId>
     <artifactId>JawaChat</artifactId>
-    <version>1.15.X-1.0</version>
+    <version>1.15.X-2.0</version>
     <packaging>jar</packaging>
     <repositories>
         <repository>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.15.1-R0.1-SNAPSHOT</version>
+            <version>1.15.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -29,27 +29,15 @@
             <version>21.0</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>net.jawasystems</groupId>
+            <artifactId>JawaCore</artifactId>
+            <version>1.15.X-1.0</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>

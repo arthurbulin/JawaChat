@@ -5,7 +5,6 @@
  */
 package jawamaster.jawachat.listeners;
 
-import jawamaster.jawachat.JawaChat;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -25,12 +24,12 @@ public class OnBukkitMe implements Listener {
 
         
         if (command.toLowerCase().startsWith("/me")){
-            
+            //ChatHandler.meAction(player, command.replaceFirst("/me", ""));
             //TODO figure out italics
             //System.out.println("Plugin server: " + JawaChat.plugin.getServer());
-            System.out.println("OnlinePlayers: " + Bukkit.getServer().getOnlinePlayers());
+//            System.out.println("OnlinePlayers: " + Bukkit.getServer().getOnlinePlayers());
             
-            String replaceFirst = command.replaceFirst("/me", ChatColor.ITALIC + "*" + player.getDisplayName() + ChatColor.GRAY);
+            String replaceFirst = command.replaceFirst("/me", ChatColor.ITALIC + "*" + ChatColor.RESET + player.getDisplayName() + ChatColor.GRAY);
             Bukkit.getServer().getOnlinePlayers().forEach((target) -> {
                 target.sendMessage(replaceFirst);
             }); 

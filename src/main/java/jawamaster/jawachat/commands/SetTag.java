@@ -6,19 +6,14 @@
 package jawamaster.jawachat.commands;
 
 import java.util.Arrays;
-import java.util.UUID;
-import jawamaster.jawachat.JawaChat;
 import jawamaster.jawachat.handlers.FormattingHandler;
-import jawamaster.jawapermissions.PlayerDataObject;
-import jawamaster.jawapermissions.handlers.ESHandler;
-import jawamaster.jawapermissions.handlers.PlayerDataHandler;
-import org.bukkit.Bukkit;
+import net.jawasystems.jawacore.PlayerManager;
+import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.json.JSONObject;
 
 /**
  *
@@ -28,74 +23,38 @@ public class SetTag implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command arg1, String arg2, String[] arg3) {
-        String usage = "/settag <playername> tag" +
-                "/settag <playername>";
-        PlayerDataObject pdObject;
-        boolean remove = false;
-        boolean online = false;
-        UUID targetUUID;
-        String tag = "";
+        String usage = "/settag <playername> tag"
+                + "/settag <playername>";
         
-        if (arg3.length == 1){
-            remove = true;
+        PlayerDataObject pdObject = PlayerManager.getPlayerDataObject(arg3[0]);
+        if (pdObject == null){
+            commandSender.sendMessage(ChatColor.RED + " > Error: That Player wasn't found either online or offline. Try using the player's actual minecraft name and not their nickname.");
+            return true;
+        }
+
+        if (arg3 == null || arg3.length == 0){
+          return true;  
+        } else if (arg3.length == 1){
+            pdObject.setTag("");
+            pdObject.sendMessageIf(ChatColor.GREEN + " > Your tag has been removed.");
+            if (!pdObject.equals(((Player) commandSender))) commandSender.sendMessage(ChatColor.GREEN + " > " + pdObject.getFriendlyName() + "'s tag has been removed.");
         } else if (arg3.length > 1) {
-            remove = false;
-            tag = String.join(" ", Arrays.asList(Arrays.copyOfRange(arg3, 1, arg3.length)));
-        }
+            pdObject.setTag(String.join(" ", Arrays.asList(Arrays.copyOfRange(arg3, 1, arg3.length))));
+            
+            //If player is online send message
+            pdObject.sendMessageIf(ChatColor.GREEN + " > Your tag has been set to: " + ChatColor.translateAlternateColorCodes('&', String.join(" ", Arrays.asList(Arrays.copyOfRange(arg3, 1, arg3.length)))));
 
-        
-
-//###############################################################################
-//# Assess offline status for target
-//###############################################################################
-        //Check if target is offline
-        Player target = Bukkit.getPlayer(arg3[0]);
-
-        //If player is online
-        if (target != null) {
-            targetUUID = target.getUniqueId();
-            online = true;
-        } else { //if player is offline
-            online = false;
-            pdObject = ESHandler.findOfflinePlayer(arg3[0], false);
-            if ( pdObject == null) {
-                commandSender.sendMessage(ChatColor.RED + " > ERROR: " + arg3[0] + " was not found! Please check the player name!");
-                return true;//Short circuit in the event the player is not found
+            //If the player is not the commandsender let the commandsender know what is being done
+            if (!pdObject.equals((Player) commandSender)) {
+                commandSender.sendMessage(ChatColor.GREEN + " > " + pdObject.getName() + "'s tag has been set to " + ChatColor.translateAlternateColorCodes('&', String.join(" ", Arrays.asList(Arrays.copyOfRange(arg3, 1, arg3.length)))));
             }
-            targetUUID = UUID.fromString(pdObject.getPlayerUUID());
-        }
-        
-//###############################################################################
-//# Check Immunity for the command
-//###############################################################################
-        //TODO check immunity
 
-        
-//###############################################################################
-//# Build Update
-//###############################################################################
-        JSONObject tagChange = PlayerDataHandler.createPlayerTagChangeData(tag);
-        ESHandler.asyncUpdateData(targetUUID.toString(), tagChange);
-        
-        // TODO FIXME clean up these messages. see setnick
-        if (online) {
-            FormattingHandler.recompilePlayerName(target);
-            if (!remove) {
-                JawaChat.playerTags.put(targetUUID, tag);
-            } else {
-                JawaChat.playerTags.remove(targetUUID);
-            }
         }
-        if (!remove) {
-            commandSender.sendMessage(ChatColor.GREEN + " > " + arg3[0] + "'s tag has been changed to " + ChatColor.translateAlternateColorCodes('$', tag));
-        } else {
-            commandSender.sendMessage(ChatColor.GREEN + " > " + arg3[0] + "'s tag has been removed.");
+        //If the player is online rebuild their name
+        if (pdObject.isOnline()) {
+            FormattingHandler.recompilePlayerName(pdObject.getPlayer());
         }
-        
-        //rebuild player name
-     
-     return true;
-
+        return true;
     }
-    
+
 }
