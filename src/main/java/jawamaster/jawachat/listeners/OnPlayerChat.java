@@ -36,6 +36,10 @@ public class OnPlayerChat implements Listener {
                 player.sendMessage(ChatColor.RED + "You do not have permission to perform that function.");
             }
                 
+        } else if (e.getMessage().contains("@staff")){
+            ChatHandler.generalChat(player, e.getMessage());
+            JawaChat.getFoxelBot().notifyStaff(e.getPlayer(), e.getMessage());
+        
         } else if (ChatHandler.isMuted(e.getPlayer().getUniqueId())){
             ChatHandler.mutedChat(player, e.getMessage());
         }

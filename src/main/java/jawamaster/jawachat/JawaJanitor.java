@@ -22,7 +22,7 @@ public class JawaJanitor {
     public JawaJanitor (JawaChat plugin) {
         this.plugin = plugin;
         maintenanceTasks = new HashMap();
-        Logger.getLogger("[JawaChat][JawaJanitor]").log(Level.INFO, "Creating Maintenance Task");
+        Logger.getLogger("JawaChat][JawaJanitor").log(Level.INFO, "Creating Maintenance Task");
         scheduleMaintenanceTasks();
     } 
     

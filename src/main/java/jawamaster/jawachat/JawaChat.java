@@ -9,19 +9,22 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import jawamaster.jawachat.commands.BreakCommand;
+import jawamaster.jawachat.commands.DiscordLink;
 import jawamaster.jawachat.commands.Mute;
 import jawamaster.jawachat.commands.PrivateMessage;
 import jawamaster.jawachat.commands.SetNick;
 import jawamaster.jawachat.commands.SetStar;
 import jawamaster.jawachat.commands.SetTag;
+import jawamaster.jawachat.listeners.DiscordLinkListener;
+import jawamaster.jawachat.listeners.DiscordRestartListener;
+import jawamaster.jawachat.listeners.ExceptionMonitor;
 import jawamaster.jawachat.listeners.OnBukkitMe;
 import jawamaster.jawachat.listeners.OnPlayerRankChange;
 import jawamaster.jawachat.listeners.OnPlayerChat;
@@ -46,6 +49,7 @@ public class JawaChat extends JavaPlugin {
     public static Configuration config;
     public static boolean debug;
     public static String ServerName;
+    public static boolean discordConnected;
     
     //HashMaps for player controls
     public static Map<UUID, String> playerTags;
@@ -57,6 +61,8 @@ public class JawaChat extends JavaPlugin {
     public static Map<UUID, Player> opsOnline;
     
     public static String pluginSlug = "[JawaChat] ";
+    
+    private static DiscordBot foxelBot;
     
     private static JawaJanitor jawaJanitor;
     
@@ -87,6 +93,8 @@ public class JawaChat extends JavaPlugin {
         playerCompiledName = new HashMap();
         opsOnline = new HashMap();
         
+        
+        discordConnected = initiateDiscordLink();
         //Attempt BungeeIntegration
         //this.getServer().getMessenger().registerOutgoingPluginChannel(this, "JawaChat");
         //this.getServer().getMessenger().registerIncomingPluginChannel(this, "JawaChat", new OnPluginMessage());
@@ -97,6 +105,8 @@ public class JawaChat extends JavaPlugin {
         this.getCommand("setstar").setExecutor(new SetStar());
         this.getCommand("pm").setExecutor(new PrivateMessage());
         this.getCommand("mute").setExecutor(new Mute());
+        this.getCommand("discordlink").setExecutor(new DiscordLink());
+        
         
         //Declare and initiate Listeners
         getServer().getPluginManager().registerEvents(new PlayerInfoLoadedListener(), this);
@@ -106,6 +116,12 @@ public class JawaChat extends JavaPlugin {
 //        getServer().getPluginManager().registerEvents(new OnOpChat(), this);
         getServer().getPluginManager().registerEvents(new OnPlayerRankChange(), this);
         getServer().getPluginManager().registerEvents(new OnPlayerJoin(), this);
+        
+        getServer().getPluginManager().registerEvents(new DiscordLinkListener(), this);
+        getServer().getPluginManager().registerEvents(new DiscordRestartListener(), this);
+        
+        //getServer().getPluginManager().registerEvents(new ExceptionMonitor(), this);
+        //this.getCommand("breakcommand").setExecutor(new BreakCommand());
         
         //Bukkit.getServer().getP
 
@@ -140,6 +156,26 @@ public class JawaChat extends JavaPlugin {
     
     public static Configuration getConfiguration(){
         return config;
+    }
+    
+    private static boolean initiateDiscordLink() {
+        if (getConfiguration().getBoolean("discord-link", false)) {
+            if (getConfiguration().contains("discord-token")) {
+                foxelBot = new DiscordBot("FoxelBot", getConfiguration().getString("discord-token"));
+                foxelBot.initiateListener();
+                return true;
+            } else {
+                Logger.getLogger("DiscordLink initialization").warning("In order to use the discord link you must include the discord token for your bot with the configuration key \'discord-token\'");
+                return false;
+            }
+        } else {
+            Logger.getLogger("DiscordLink initialization").info("DiscordLink is not configured for this server.");
+            return false;
+        }
+    }
+    
+    public static DiscordBot getFoxelBot(){
+        return foxelBot;
     }
     
 //    private void intiateChatLogging(){

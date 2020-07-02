@@ -5,13 +5,17 @@
  */
 package jawamaster.jawachat.handlers;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import jawamaster.jawachat.JawaChat;
 import net.jawasystems.jawacore.PlayerManager;
 import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
@@ -23,6 +27,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.json.JSONObject;
 
 /**
  *
@@ -32,6 +37,8 @@ public class ChatHandler {
     
     private static Map<Player,Player> replies = new HashMap();
     private static HashSet<UUID> muted = new HashSet();
+    private static HashMap<Player, JSONObject> chatTrack = new HashMap();
+    private static HashMap<String, Pattern> patterns = new HashMap();
     
     /** Send a player message through the op channel.
      * @param player
@@ -257,5 +264,20 @@ public class ChatHandler {
     
     private static void logMessage(String message, String channel){
         Logger.getLogger("ServerChat").log(Level.INFO, "[{0}] {1}", new Object[]{channel, message});
+    }
+    
+    public static void generatePatterns(){
+        InputStream io = JawaChat.getPlugin().getResource("chat_filters.json");
+        String objStr = new BufferedReader(new InputStreamReader(io)).lines().collect(Collectors.joining("\n"));
+        
+        JSONObject patternJSON = new JSONObject(objStr);
+        for (String key : patternJSON.keySet()){
+            
+        }
+        
+    }
+    
+    private static void screenChat(Player player, String message){
+        //if (message.matches(message))
     }
 }

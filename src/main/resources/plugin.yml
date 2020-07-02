@@ -25,8 +25,17 @@ commands:
     description: "Allows an admin to mute a player"
     usage: "/mute <player>"
     permission: jawachat.mute
+  discordlink:
+    description: "Generates a linking code to be used with the FoxelBot discord bot"
+    usage: "/discordlink"
+    permission: jawachat.discordlink
+  breakcommand:
+    permission: breakcommand
     
 permissions:
+  jawachat.discordlink:
+    description: "Allows linking of an account to discord"
+    default: true
   jawachat.mute:
     description: "Allows access to the /mute command"
     default: op
@@ -42,3 +51,5 @@ permissions:
   jawachat.setnick:
     description: "Allows an admin to set the nickname of the player specified"
     default: op
+  breakcommand:
+    default: true
