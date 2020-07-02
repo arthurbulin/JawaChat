@@ -5,19 +5,17 @@
  */
 package jawamaster.jawachat.commands;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jawamaster.jawachat.handlers.FormattingHandler;
-import jawamaster.jawapermissions.PlayerDataObject;
-import jawamaster.jawapermissions.handlers.PlayerDataHandler;
+import net.jawasystems.jawacore.PlayerManager;
+import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 /**
  *
@@ -28,76 +26,41 @@ public class SetStar implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command arg1, String arg2, String[] arg3) {
 
-        String usage = "/star <player> <r|g|y|clear>";
-         Set options = new HashSet(Arrays.asList("r","g","y","g"));
-         PlayerDataObject pdObject;
-         
-        switch (arg3.length) {
-            case 0://return usage
-                commandSender.sendMessage(usage);
-                return true;
-            case 1://TODO return player star info?
-                return true;
-            case 2://proceed like normal
-                if (options.contains(arg3[1].charAt(0))) {//validate input
-                    try {
-                        pdObject = PlayerDataHandler.validatePlayer(commandSender, arg3[0]);
-                        if (pdObject == null) return true; //Terminate if the player isnt found
-                        
-                        switch (arg3[1].charAt(0)){
-                            case 'r':
-                                //PlayerDataHandler.starData(starData, usage)
-                                break;
-                        }
-                        
-                    } catch (IOException ex) {
-                        Logger.getLogger(SetStar.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+        String usage = "/star <player> [r|g|y]";
+        Set options = new HashSet(Arrays.asList("r", "g", "y"));
 
-                } else {
-                    commandSender.sendMessage(ChatColor.RED + " > ERROR: " + arg3[1] + " is not a valid argument flag.");
-                    commandSender.sendMessage(ChatColor.WHITE + " > " + usage);
-                }
-                return true;
-            default:
-                break;
+        PlayerDataObject pdObject = PlayerManager.getPlayerDataObject(arg3[0]);
+        if (pdObject == null) {
+            commandSender.sendMessage(ChatColor.RED + " > Error: That Player wasn't found either online or offline. Try using the player's actual minecraft name and not their nickname.");
+            return true;
         }
+
+        if (arg3 == null || arg3.length == 0) {
+            commandSender.sendMessage(ChatColor.GREEN + " > " + ChatColor.WHITE + usage);
+            return true;
+        } else if (arg3.length == 1) {
+            pdObject.setStar("");
+            pdObject.sendMessageIf(ChatColor.GREEN + " > Your star has been removed.");
+            if (!pdObject.equals(((Player) commandSender))) commandSender.sendMessage(ChatColor.GREEN + " > " + pdObject.getFriendlyName() + "'s star has been removed.");
+        } else if (arg3.length > 1) {
+            if (!(arg3[1].equalsIgnoreCase("r") || arg3[1].equalsIgnoreCase("y") || arg3[1].equalsIgnoreCase("g"))){
+                commandSender.sendMessage(ChatColor.RED + " > That is not a valid star option. You may choose: r,y,g, or leave it empty to clear the star.");
+                return true;
+            }
+            pdObject.setStar(arg3[1].toLowerCase());
+
+            //If player is online send message
+            pdObject.sendMessageIf(ChatColor.GREEN + " > You have been given a " + pdObject.getStar());
+            if (!pdObject.equals(((Player) commandSender))) commandSender.sendMessage(ChatColor.GREEN + " > " + pdObject.getFriendlyName() + " has been given a " + pdObject.getStar());
+
+
+        }
+        //If the player is online rebuild their name
+        if (pdObject.isOnline()) {
+            FormattingHandler.recompilePlayerName(pdObject.getPlayer());
+        }
+
         return true;
     }
-    
+
 }
-              //        String star;
-//        switch (arg3.length){
-//            case 0:
-//                if (commandSender instanceof Player) ((Player) commandSender).sendMessage("You must specify a playername at minimum");
-//                else System.out.println("You must specity a playername at minimum.");
-//                return true;
-//            case 1: //This will remove the player's star
-//                star = "$$";
-//                break;
-//            default:
-//                star = arg3[1];
-//
-//                if (null != star) switch (star) {
-//            case "g":
-//                star = ChatColor.GREEN + "*";
-//                break;
-//            case "r":
-//                star = ChatColor.RED + "*";
-//                break;
-//            default:
-//                if (commandSender instanceof Player) ((Player) commandSender).sendMessage("You must specify r for red or g for green.");
-//                else System.out.println("You must specify r for red or g for green.");
-//                return true;
-//        }
-//                break;
-//        }
-//        
-//        try{
-//            Player target = Bukkit.getPlayer(arg3[0]);
-//            ESDataHandler.setStar(target, commandSender, star);
-//        } catch (Exception e){
-//            if (commandSender instanceof Player) ((Player) commandSender).sendMessage("It is likely you are trying to star an offline player. This is not currently implimented.");
-//            else System.out.println("It is likely you are trying to star an offline player. This is not currently implimented.");
-//        }
-//

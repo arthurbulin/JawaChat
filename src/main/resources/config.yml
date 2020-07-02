@@ -1,9 +1,11 @@
-servername: Main
-eshost: localhost
-esport: 9200
-default-world: world
 debug: false
-new-player-message: "You have been successfully Indexed"
-rank-colors:
-  guest: 7
-  admin: c
+discord-configuration:
+    discord-link: false
+    discord-server: FoxelBox
+    discord-token: "000000000000000000000000.000000.000000000000000000000000000"
+    discord-channel-map:
+        staff-channel: staff-chat
+        control-channel: server-control
+        general-channel: general
+        minecraft-channel: minecraft
+    discord-owner: 203190296169807873

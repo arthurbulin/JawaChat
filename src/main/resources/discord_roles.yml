@@ -1,0 +1,40 @@
+guest:
+    discordrank: 522538121414443021
+    permissions:
+        - user.alert
+builder:
+    discordrank: 306236533751414784
+    permissions:
+        - user.alert
+advbuilder:
+    discordrank: 716307249764761612
+    permissions:
+        - user.alert
+architect:
+    discordrank: 718942693581127770
+    permissions:
+        - user.alert
+trainee:
+    discordrank: 310094319849832458
+    permissions:
+        - user.alert
+        - server.control
+        - server.anounce
+admin:
+    discordrank: 202947541598339072
+    permissions:
+        - user.alert
+        - server.control
+        - server.anounce
+superadmin:
+    discordrank: 202947498342350848
+    permissions:
+        - user.alert
+        - server.control
+        - server.anounce
+owner:
+    discordrank: 309713504129122304
+    permissions:
+        - user.alert
+        - server.control
+        - server.anounce

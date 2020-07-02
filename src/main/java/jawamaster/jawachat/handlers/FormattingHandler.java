@@ -6,11 +6,11 @@
 package jawamaster.jawachat.handlers;
 
 import java.util.UUID;
-import jawamaster.jawachat.JawaChat;
-import jawamaster.jawapermissions.JawaPermissions;
-import jawamaster.jawapermissions.PlayerDataObject;
-import jawamaster.jawapermissions.handlers.ESHandler;
-import jawamaster.jawapermissions.utils.ESRequestBuilder;
+import net.jawasystems.jawacore.PlayerManager;
+import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
+import net.jawasystems.jawacore.handlers.ESHandler;
+import net.jawasystems.jawacore.utils.ESRequestBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.json.JSONObject;
@@ -23,110 +23,61 @@ public class FormattingHandler {
 
     public static void updatePlayerName(Player target) {
         PlayerDataObject pdObject = new PlayerDataObject(target.getUniqueId());
-
         pdObject = ESHandler.runMultiIndexSearch(ESRequestBuilder.buildSingleMultiSearchRequest("players", "_id", target.getUniqueId().toString()), pdObject);
-
-        compilePlayerNameOnJoin(target, pdObject);
+        compilePlayerNameOnJoin(target.getUniqueId(), pdObject);
     }
 
+    public static void recompilePlayerName(UUID uuid){
+        recompilePlayerName(Bukkit.getServer().getPlayer(uuid));
+    }
+    
     /** Recreates the player's display and list names using the map stored player
      * information.
      * @param target 
      */
     public static void recompilePlayerName(Player target){
-        String star = "";
-        String tag = "";
-        String nick = "";
-        
-        if (JawaChat.playerStars.containsKey(target.getUniqueId())) star = JawaChat.playerStars.get(target.getUniqueId());
-        if (JawaChat.playerTags.containsKey(target.getUniqueId())) tag = JawaChat.playerTags.get(target.getUniqueId());
-        if (JawaChat.playerNicks.containsKey(target.getUniqueId())) nick = JawaChat.playerNicks.get(target.getUniqueId());
-        
-        compilePlayerName(target, star, tag, nick);
-        compileListName(target);
+        compilePlayerName(target.getUniqueId(), PlayerManager.getPlayerDataObject(target));
+        compileListName(PlayerManager.getPlayerDataObject(target));
     }
     
-    public static void compilePlayerNameOnJoin(Player target, PlayerDataObject pdObject) {
-        //Store player data
-        pdObject.spillData();
-        storePlayerNameData(target, pdObject);
+    public static void compilePlayerNameOnJoin(UUID target, PlayerDataObject pdObject) {
         compilePlayerName(target, pdObject);
-        compileListName(target);
+        compileListName(pdObject);
     }
     
-    /** Commit all values needed to build a player's in-game name to maps. This is
-     * backed by storePlayerNameData(Player target, JSONObject starData, String tag, String nickName)
-     * @param target
-     * @param pdObject
-     */
-    public static void storePlayerNameData(Player target, PlayerDataObject pdObject){
-        storePlayerNameData(target, pdObject.getStar(), pdObject.getTag(), pdObject.getNickName());
-    }
-    
-    /** Commit all values needed to build a player's in-game name to maps.
-     * @param target
-     * @param starData
-     * @param tag
-     * @param nickName 
-     */
-    public static void storePlayerNameData(Player target, String star, String tag, String nickName) {
-        if (!star.equals("")) JawaChat.playerStars.put(target.getUniqueId(), star);
-        if (!tag.equals("")) JawaChat.playerTags.put(target.getUniqueId(), tag);
-        if (!nickName.equals("")) JawaChat.playerNicks.put(target.getUniqueId(), nickName);
-    }
-    
-    public static void compilePlayerName(Player target, PlayerDataObject pdObject){
-        compilePlayerName(target, pdObject.getStar(), pdObject.getTag(), pdObject.getNickName());
-    }
-    
-    /** Compile a player's display name and commit it to store
-     * @param target
-     * @param star
-     * @param tag
-     * @param nickName 
-     */
-    public static void compilePlayerName(Player target, String star, String tag, String nickName){
+    public static void compilePlayerName(UUID target, PlayerDataObject pdObject){
         //Player displayname compilation
         String displayName = "";
+
+        if (!pdObject.getStar().equals("")) displayName += pdObject.getStar();
+        if (!pdObject.getTag().equals("")) displayName += ChatColor.translateAlternateColorCodes('&', pdObject.getTag()) + " ";
         
-        System.out.println("Star: "+ star + "tag: " + tag + "nick: "+nickName);
-        
-        String rank = JawaPermissions.playerRank.get(target.getUniqueId());
-        System.out.println("rank: " + rank);
-        
-        String color = JawaChat.rankColorMap.get(rank);
-        System.out.println("color: "+color);
-        
-        System.out.println(JawaChat.rankColorMap);
-        
-        ChatColor cc = ChatColor.getByChar(color.charAt(0));
-        System.out.println("chat color: " + cc + "test");
-        
-        if (!star.equals("")) displayName += star;
-        if (!tag.equals("")) displayName += tag;
-        if (!nickName.equals("")) displayName += " " + nickName;
-        else displayName += cc + " " + target.getName();
-//        else displayName += ChatColor.getByChar(JawaChat.rankColorMap.get(JawaChat.playerRanks.get(target.getUniqueId()))) + target.getName();
-        
-        target.setDisplayName(displayName);
-        
-        JawaChat.playerCompiledName.put(target.getUniqueId(),displayName);
+        if (!pdObject.getNickName().equals("")) displayName += ChatColor.translateAlternateColorCodes('&', pdObject.getNickName());
+        else displayName += pdObject.getRankColor() + pdObject.getName();
+        pdObject.getPlayer().setDisplayName(displayName);
+        //pdObject.setCompiledName(displayName);
+
     }
     
     /** Compiles the player listname from the given information.
-     * @param target
-     * @param pdObject 
+     * @param pdObject
+     * @param target 
      */
-    public static void compileListName(Player target){
+    public static void compileListName(PlayerDataObject pdObject){
         //Player listname compilation
         String listName = "";
-        if (!JawaChat.playerNicks.containsKey(target.getUniqueId())){
-            listName = ChatColor.getByChar(JawaChat.rankColorMap.get(JawaPermissions.playerRank.get(target.getUniqueId()))) + " " + target.getName();
+        if (pdObject.getNickName().equals("")){
+            listName = pdObject.getRankColor() + pdObject.getName();
         } else {
-            listName = ChatColor.getByChar(JawaChat.rankColorMap.get(JawaPermissions.playerRank.get(target.getUniqueId()))) + JawaChat.playerNicks.get(target.getUniqueId()) + ChatColor.WHITE + "> " + target.getName();
+            listName =
+                    pdObject.getRankColor() + 
+                    pdObject.getFriendlyName() + 
+                    ChatColor.WHITE + "> " + 
+                    pdObject.getRankColor() + 
+                    pdObject.getName();
         }
 
-        target.setPlayerListName(listName);
+        pdObject.getPlayer().setPlayerListName(listName);
     }
     
     /** Compile the string containing stars for the user's name.

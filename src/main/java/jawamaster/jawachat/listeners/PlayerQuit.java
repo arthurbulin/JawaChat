@@ -7,6 +7,7 @@ package jawamaster.jawachat.listeners;
 
 import java.util.UUID;
 import jawamaster.jawachat.JawaChat;
+import jawamaster.jawachat.handlers.ChatHandler;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,6 +30,8 @@ public class PlayerQuit implements Listener{
         if (JawaChat.playerStars.containsKey(uuid)) JawaChat.playerStars.remove(uuid);
         if (JawaChat.playerTags.containsKey(uuid)) JawaChat.playerTags.remove(uuid);
         if (JawaChat.playerCompiledName.containsKey(uuid)) JawaChat.playerCompiledName.remove(uuid);
+        if (JawaChat.opsOnline.containsKey(uuid)) JawaChat.opsOnline.remove(uuid);
+        ChatHandler.playerQuit(player);
         
     }
 }

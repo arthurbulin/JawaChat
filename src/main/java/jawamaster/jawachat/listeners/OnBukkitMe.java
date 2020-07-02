@@ -5,14 +5,11 @@
  */
 package jawamaster.jawachat.listeners;
 
-import java.util.Set;
-import jawamaster.jawachat.JawaChat;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 /**
@@ -24,12 +21,22 @@ public class OnBukkitMe implements Listener {
     public static void PlayerChat(PlayerCommandPreprocessEvent e) {
         String command = e.getMessage();
         Player player = e.getPlayer();
-        Set<Player> playerSet = e.getRecipients();
+
+        
         if (command.toLowerCase().startsWith("/me")){
-            e.setCancelled(true);
+            //ChatHandler.meAction(player, command.replaceFirst("/me", ""));
             //TODO figure out italics
-            String replaceFirst = command.replaceFirst("/me", ChatColor.DARK_GRAY.ITALIC + "*" + player.getDisplayName() + ChatColor.DARK_GRAY);
-            Bukkit.getServer().broadcastMessage(replaceFirst);
+            //System.out.println("Plugin server: " + JawaChat.plugin.getServer());
+//            System.out.println("OnlinePlayers: " + Bukkit.getServer().getOnlinePlayers());
+            
+            String replaceFirst = command.replaceFirst("/me", ChatColor.ITALIC + "*" + ChatColor.RESET + player.getDisplayName() + ChatColor.GRAY);
+            Bukkit.getServer().getOnlinePlayers().forEach((target) -> {
+                target.sendMessage(replaceFirst);
+            }); 
+            //JawaChat.getPlugin().getServer().broadcastMessage(replaceFirst);
+            //Bukkit.getServer().broadcast(replaceFirst, Server.BROADCAST_CHANNEL_USERS);
+            //Bukkit.getServer().br
+            e.setCancelled(true);
         }
         
     }

@@ -9,35 +9,32 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jawamaster.jawachat.commands.BreakCommand;
+import jawamaster.jawachat.commands.DiscordLink;
+import jawamaster.jawachat.commands.Mute;
 import jawamaster.jawachat.commands.PrivateMessage;
 import jawamaster.jawachat.commands.SetNick;
 import jawamaster.jawachat.commands.SetStar;
 import jawamaster.jawachat.commands.SetTag;
+import jawamaster.jawachat.listeners.DiscordLinkListener;
+import jawamaster.jawachat.listeners.DiscordRestartListener;
+import jawamaster.jawachat.listeners.ExceptionMonitor;
 import jawamaster.jawachat.listeners.OnBukkitMe;
-import jawamaster.jawachat.listeners.OnOpChat;
 import jawamaster.jawachat.listeners.OnPlayerRankChange;
-import jawamaster.jawachat.listeners.PlayerChat;
+import jawamaster.jawachat.listeners.OnPlayerChat;
+import jawamaster.jawachat.listeners.OnPlayerJoin;
 import jawamaster.jawachat.listeners.PlayerInfoLoadedListener;
 import jawamaster.jawachat.listeners.PlayerQuit;
-import jawamaster.jawachat.listeners.OnPluginMessage;
-import jawamaster.jawapermissions.handlers.ESHandler;
-import org.apache.http.HttpHost;
-import org.apache.http.client.config.RequestConfig;
+import net.jawasystems.jawacore.handlers.ESHandler;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -51,31 +48,32 @@ public class JawaChat extends JavaPlugin {
 //    //Variable declarations
     public static Configuration config;
     public static boolean debug;
-    public static String eshost;
-    public static int esport;
-    public static RestHighLevelClient restClient;
     public static String ServerName;
+    public static boolean discordConnected;
     
     //HashMaps for player controls
-    //public static Map<UUID, String> playerRanks;
     public static Map<UUID, String> playerTags;
     public static Map<UUID, String> playerNicks;
     public static Map<UUID, String> playerStars;
     public static Map<UUID, String> playerCompiledName;
     public static Map<String, String> rankColorMap;
     
-    public static Set<Player> opsOnline;
+    public static Map<UUID, Player> opsOnline;
     
     public static String pluginSlug = "[JawaChat] ";
+    
+    private static DiscordBot foxelBot;
+    
+    private static JawaJanitor jawaJanitor;
+    
+    private static final Logger CHATLOGGER = Logger.getLogger("ServerChat");
+    private static volatile FileHandler fileHandler;
+    
     
     public static JawaChat getPlugin(){
         return plugin;
     }
-    
-//    public static RestHighLevelClient getESClient(){
-//        return restClient;
-//    }
-    
+
     @Override
     public void onEnable(){
         try {
@@ -83,17 +81,20 @@ public class JawaChat extends JavaPlugin {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(JawaChat.class.getName()).log(Level.SEVERE, null, ex);
         }
-        startESHandler();
-
+        
+        //intiateChatLogging();
+        
+        plugin = this;
+        jawaJanitor = new JawaJanitor(plugin);
         //Initiate maps
-        //playerRanks = new HashMap();
         playerTags = new HashMap();
         playerNicks = new HashMap();
         playerStars = new HashMap();
         playerCompiledName = new HashMap();
-        opsOnline = new HashSet();
-        //rankColorMap = new HashMap();
+        opsOnline = new HashMap();
         
+        
+        discordConnected = initiateDiscordLink();
         //Attempt BungeeIntegration
         //this.getServer().getMessenger().registerOutgoingPluginChannel(this, "JawaChat");
         //this.getServer().getMessenger().registerIncomingPluginChannel(this, "JawaChat", new OnPluginMessage());
@@ -102,16 +103,27 @@ public class JawaChat extends JavaPlugin {
         this.getCommand("setnick").setExecutor(new SetNick());
         this.getCommand("settag").setExecutor(new SetTag());
         this.getCommand("setstar").setExecutor(new SetStar());
-        //this.getCommand("me").setExecutor(new OnMe());
         this.getCommand("pm").setExecutor(new PrivateMessage());
+        this.getCommand("mute").setExecutor(new Mute());
+        this.getCommand("discordlink").setExecutor(new DiscordLink());
+        
         
         //Declare and initiate Listeners
-        //getServer().getPluginManager().registerEvents(new OnPlayerRankChange(), this);
         getServer().getPluginManager().registerEvents(new PlayerInfoLoadedListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerQuit(), this);
-        getServer().getPluginManager().registerEvents(new PlayerChat(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerChat(), this);
         getServer().getPluginManager().registerEvents(new OnBukkitMe(), this);
-        getServer().getPluginManager().registerEvents(new OnOpChat(), this);
+//        getServer().getPluginManager().registerEvents(new OnOpChat(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerRankChange(), this);
+        getServer().getPluginManager().registerEvents(new OnPlayerJoin(), this);
+        
+        getServer().getPluginManager().registerEvents(new DiscordLinkListener(), this);
+        getServer().getPluginManager().registerEvents(new DiscordRestartListener(), this);
+        
+        //getServer().getPluginManager().registerEvents(new ExceptionMonitor(), this);
+        //this.getCommand("breakcommand").setExecutor(new BreakCommand());
+        
+        //Bukkit.getServer().getP
 
     }
     
@@ -125,33 +137,13 @@ public class JawaChat extends JavaPlugin {
         opsOnline.clear();
     }
     
-    public void startESHandler(){
-        
-        //Initialize the restClient for global use
-        restClient = new RestHighLevelClient(RestClient.builder(new HttpHost(eshost, esport, "http"))
-                .setRequestConfigCallback((RequestConfig.Builder requestConfigBuilder) -> requestConfigBuilder.setConnectTimeout(5000).setSocketTimeout(60000)));
-        
-        //Long annoying debug line for restClient connection
-        if (debug){
-            System.out.println(pluginSlug + "High Level Rest Client initialized at: " + restClient.toString());
-            System.out.println(pluginSlug + "With host: " + eshost);
-            System.out.println(pluginSlug + "on port: " + esport);
-            //boolean restPing = false;
-            //restPing = restClient.ping();
-            //System.out.println(pluginSlug + "ElasticSearch DB pings as: "  );
-        }
-        
-        eshandler = new ESHandler(restClient);
-        
-    }
-    
     public void loadConfig() throws FileNotFoundException{
         //Handle the config generation and loading
         this.saveDefaultConfig();
         config = this.getConfig();
         debug = (Boolean) config.get("debug");
-        eshost = (String) config.get("eshost");
-        esport = (int) config.get("esport");
+        //eshost = (String) config.get("eshost");
+        //esport = (int) config.get("esport");
         ServerName = (String) config.get("servername");
         
         final File rankColors =  new File(this.getDataFolder() + "/rankcolors.yml");
@@ -159,7 +151,62 @@ public class JawaChat extends JavaPlugin {
         
         BufferedReader reader = new BufferedReader(new FileReader(rankColors));
         rankColorMap = (Map<String,String>) yaml.load(reader);
-        System.out.println(rankColorMap);
-        //System.out.println(JawaChat.pluginSlug + "rankColorMap: " + rankColorMap);
+        //System.out.println(rankColorMap);
     }
+    
+    public static Configuration getConfiguration(){
+        return config;
+    }
+    
+    private static boolean initiateDiscordLink() {
+        if (getConfiguration().getBoolean("discord-link", false)) {
+            if (getConfiguration().contains("discord-token")) {
+                foxelBot = new DiscordBot("FoxelBot", getConfiguration().getString("discord-token"));
+                foxelBot.initiateListener();
+                return true;
+            } else {
+                Logger.getLogger("DiscordLink initialization").warning("In order to use the discord link you must include the discord token for your bot with the configuration key \'discord-token\'");
+                return false;
+            }
+        } else {
+            Logger.getLogger("DiscordLink initialization").info("DiscordLink is not configured for this server.");
+            return false;
+        }
+    }
+    
+    public static DiscordBot getFoxelBot(){
+        return foxelBot;
+    }
+    
+//    private void intiateChatLogging(){
+//        FileHandler fh = fileHandler;
+//        if (fh != null){
+//            CHATLOGGER.removeHandler(fh);
+//            fh.close();
+//        }
+//        
+//        fileHandler = rotate(this.getDataFolder() + "/aioinfo%g.log", 1048576, 100, true);
+//    }
+//    
+//    private static FileHandler rotate(String pattern, int limit, int count, boolean append){
+//        try {
+//            LogManager m = LogManager.getLogManager();
+//            String p = FileHandler.class.getName();
+//            pattern = m.getProperty(p + ".pattern");
+//            if (pattern == null) {
+//                pattern = "%h/java%u.log";
+//            }
+//            new FileHandler(pattern, 0, count, false).close();
+//            return new FileHandler(pattern, limit, count, append);
+//        } catch (IOException ex) {
+//            Logger.getLogger(JawaChat.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (SecurityException ex) {
+//            Logger.getLogger(JawaChat.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return null;
+//    }
+//    
+//    public static Logger getChatLogger(){
+//        return CHATLOGGER;
+//    }
 }
