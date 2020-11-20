@@ -14,22 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package jawamaster.jawachat.commands;
+package jawamaster.jawachat;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-
-/** Useless test command, intentionally breaks, not used atm.
+/**
  *
  * @author Jawamaster (Arthur Bulin)
  */
-public class BreakCommand implements CommandExecutor{
-
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        System.out.println(args[100]);
-        return true;
-    }
+public class ConfigurationControl {
     
 }

@@ -31,7 +31,7 @@ public class PlayerQuit implements Listener{
         if (JawaChat.playerTags.containsKey(uuid)) JawaChat.playerTags.remove(uuid);
         if (JawaChat.playerCompiledName.containsKey(uuid)) JawaChat.playerCompiledName.remove(uuid);
         if (JawaChat.opsOnline.containsKey(uuid)) JawaChat.opsOnline.remove(uuid);
-        ChatHandler.playerQuit(player);
+        ChatHandler.playerQuit(player, event.getQuitMessage());
         
     }
 }
