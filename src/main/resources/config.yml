@@ -1,4 +1,7 @@
+server-name: Main
 debug: false
+chat-settings:
+    format: "{WORLD}{TAG}{DISPLAYNAME}: {MESSAGE}"
 discord-configuration:
     discord-link: false
     discord-server: FoxelBox
@@ -9,3 +12,61 @@ discord-configuration:
         general-channel: general
         minecraft-channel: minecraft
     discord-owner: 203190296169807873
+    permissions:
+        guest:
+            mapto: 
+                - 522538121414443021
+            permissions:
+                - user.alert
+        builder:
+            mapto:
+                - 306236533751414784
+            permissions:
+                - user.alert
+        advbuilder:
+            mapto:
+                - 716307249764761612
+            permissions:
+                - user.alert
+        architect:
+            mapto:
+                - 718942693581127770
+            permissions:
+                - user.alert
+        trainee:
+            mapto:
+                - 202947541598339072
+                - 310094319849832458
+            permissions:
+                - user.alert
+                - server.control
+                - server.anounce
+        admin:
+            mapto:
+                - 202947541598339072
+                - 202947541598339072
+            permissions:
+                - user.alert
+                - server.control
+                - server.anounce
+        superadmin:
+            mapto: 
+                - 202947541598339072
+                - 202947498342350848
+            permissions:
+                - user.alert
+                - server.control
+                - server.anounce
+        owner:
+            mapto: 
+                - 202947541598339072
+                - 309713504129122304
+            permissions:
+                - user.alert
+                - server.control
+                - server.anounce
+crosslink:
+    enable-crosslink: false
+    server-role: controller
+    server-port: 4445
+    server-host: localhost

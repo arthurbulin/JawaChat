@@ -2,7 +2,7 @@ name: JawaChat
 main: jawamaster.jawachat.JawaChat
 description: Controls chat functions and supplies various administrative commands.
 version: 2.0
-api-version: 1.15
+api-version: 1.16
 depends: JawaPermissions, JawaCore
 commands:
   setnick:
