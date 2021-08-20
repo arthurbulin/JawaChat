@@ -19,13 +19,13 @@ package jawamaster.jawachat.crosslink;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jawamaster.jawachat.JawaChat;
 import jawamaster.jawachat.handlers.ChatHandler;
 
-/**
- *
+/** Reads messages sent from a remote crosslink
  * @author Jawamaster (Arthur Bulin)
  */
 public class CrossLinkInput extends Thread {
@@ -60,10 +60,10 @@ public class CrossLinkInput extends Thread {
             LOGGER.log(Level.INFO, "A CrossLinkInput thread has been started");
         }
         while (!this.isInterrupted()){
-            Message inputMessage;
+            CrossLinkMessage inputMessage;
             
             try {
-                inputMessage = (Message) objectInputStream.readObject();
+                inputMessage = (CrossLinkMessage) objectInputStream.readObject();
                 
                 if (inputMessage != null) {
 //                    Handle validation
@@ -77,6 +77,14 @@ public class CrossLinkInput extends Thread {
                                         LOGGER.log(Level.INFO, "Validate request for {0} with UUID {1}", new Object[]{inputMessage.getServerFriendlyName(), inputMessage.getOriginatingServer().toString()});
                                     }
                                     isValidated = CrossLinkController.isAuthorized(inputMessage.getServerFriendlyName(), inputMessage.getOriginatingServer(), this, queueCode);
+                                    if (!isValidated) {
+                                        LOGGER.log(Level.INFO, "Unable to validate node {0}:{1} Stopping thread...", new Object[]{inputMessage.getServerFriendlyName(), inputMessage.getOriginatingServer().toString()});
+                                        synchronized (this) {
+                                            CrossLinkMessageHandler.unregisterInputThread(queueCode);
+                                            CrossLinkMessageHandler.unregisterOutPutThread(queueCode);
+                                        }
+                                        this.interrupt();
+                                    }
                                 }
                                 break;
                             //Recevie validation request on the node side
@@ -85,6 +93,12 @@ public class CrossLinkInput extends Thread {
                                 LOGGER.log(Level.INFO, "This node has been validated with the controller");
                                 break;
                             case VALIDATEDENIAL:
+                                LOGGER.log(Level.INFO, "This node has NOT been validated with the controller and received a denial of validation. Stopping thread...");
+                                synchronized (this) {
+                                    CrossLinkMessageHandler.unregisterInputThread(queueCode);
+                                    CrossLinkMessageHandler.unregisterOutPutThread(queueCode);
+                                }
+                                this.interrupt();
                                 break;
                         }
                     } else {
@@ -114,17 +128,28 @@ public class CrossLinkInput extends Thread {
                                 }
                                 this.interrupt();
                                 break;
-                                
                         }
                     }
                 }
                 
+            } catch (SocketException ex) {
+                synchronized (this) {
+                    CrossLinkMessageHandler.unregisterInputThread(queueCode);
+                }
+                this.interrupt();
             } catch (EOFException ex) {
-                LOGGER.log(Level.SEVERE, null, ex);
+                //LOGGER.log(Level.SEVERE, null, ex);
                 //Something fata went wrong, terminate the thread and connection
-                break;
+                synchronized (this) {
+                    CrossLinkMessageHandler.unregisterInputThread(queueCode);
+                }
+                this.interrupt();
             } catch (IOException | ClassNotFoundException ex) {
-                LOGGER.log(Level.SEVERE, null, ex);
+                //LOGGER.log(Level.SEVERE, null, ex);
+                synchronized (this) {
+                    CrossLinkMessageHandler.unregisterInputThread(queueCode);
+                }
+                this.interrupt();
             }
         }
     }

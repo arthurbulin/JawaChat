@@ -157,7 +157,7 @@ public class CrossLinkController {
             hasBeenAuthorized.add(uuid);
             queueMap.put(queueCode, serverName);
             serverMap.put(serverName, queueCode);
-            Message validationApproval = new Message(serverUUID, Message.MESSAGETYPE.VALIDATEAPPROVAL, JawaChat.getServerName());
+            CrossLinkMessage validationApproval = new CrossLinkMessage(serverUUID, CrossLinkMessage.MESSAGETYPE.VALIDATEAPPROVAL, JawaChat.getServerName());
             CrossLinkMessageHandler.sendMessage(validationApproval, queueCode);
             return true;
         } else {

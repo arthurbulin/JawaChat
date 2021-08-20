@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jawamaster.jawachat.JawaChat;
 import jawamaster.jawachat.crosslink.CrossLinkMessageHandler;
-import jawamaster.jawachat.crosslink.Message;
+import jawamaster.jawachat.crosslink.CrossLinkMessage;
 import net.jawasystems.jawacore.PlayerManager;
 import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
 import net.md_5.bungee.api.ChatColor;
@@ -26,6 +26,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.json.JSONObject;
@@ -36,8 +37,8 @@ import org.json.JSONObject;
  */
 public class ChatHandler {
     
-    private static Map<Player,Player> replies = new HashMap();
-    private static HashSet<UUID> muted = new HashSet();
+    private static final Map<Player,Player> REPLIES = new HashMap();
+    private static final HashSet<UUID> MUTED = new HashSet();
 //    private static HashMap<Player, JSONObject> chatTrack = new HashMap();
 //    private static HashMap<String, Pattern> patterns = new HashMap();
     
@@ -52,7 +53,7 @@ public class ChatHandler {
         BaseComponent[] baseComp = assembleChatMessage(createNamePredicate(player.getName(), player.getDisplayName(), ChatColor.YELLOW + "[OP] " + ChatColor.RESET, ":", ChatColor.WHITE), replaceFirst);
         
         if (JawaChat.crosslinkEnabled) {
-            Message clMessage = new Message(CrossLinkMessageHandler.getUUID(), Message.MESSAGETYPE.CHATOP, JawaChat.getServerName());
+            CrossLinkMessage clMessage = new CrossLinkMessage(CrossLinkMessageHandler.getUUID(), CrossLinkMessage.MESSAGETYPE.CHATOP, JawaChat.getServerName());
             clMessage.setChatMessage(player.getName(), player.getDisplayName(), ChatColor.YELLOW + "[OP] " + ChatColor.RESET, ":", replaceFirst);
             CrossLinkMessageHandler.sendMessage(clMessage);
         }
@@ -68,7 +69,7 @@ public class ChatHandler {
         BaseComponent[] baseComp = assembleChatMessage(createNamePredicate(player.getName(), player.getDisplayName(), "", ":", ChatColor.WHITE), message);
         
         if (JawaChat.crosslinkEnabled) {
-            Message clMessage = new Message(CrossLinkMessageHandler.getUUID(), Message.MESSAGETYPE.CHATGENERAL, JawaChat.getServerName());
+            CrossLinkMessage clMessage = new CrossLinkMessage(CrossLinkMessageHandler.getUUID(), CrossLinkMessage.MESSAGETYPE.CHATGENERAL, JawaChat.getServerName());
             clMessage.setChatMessage(player.getName(), player.getDisplayName(), "", ":", message);
             CrossLinkMessageHandler.sendMessage(clMessage);
         }
@@ -94,12 +95,12 @@ public class ChatHandler {
         //target.sendMessage(ChatColor.DARK_GRAY + "[" + player.getFriendlyName() + ChatColor.DARK_GRAY + " > you]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
         //player.sendMessage(ChatColor.DARK_GRAY + "[You > " + target.getDisplayName() + ChatColor.DARK_GRAY + "]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
         ComponentBuilder toComp = new ComponentBuilder(ChatColor.DARK_GRAY + "[" + fromPDO.getFriendlyName() + ChatColor.DARK_GRAY + " > you]" + ChatColor.WHITE + ":");
-            toComp.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("PM " + fromPDO.getPlainNick()).create()));
+            toComp.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("PM " + fromPDO.getPlainNick())));
             toComp.event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pm " + fromPDO.getName() + " "));
             toComp.append(" ").reset();
             
         ComponentBuilder fromComp = new ComponentBuilder(ChatColor.DARK_GRAY + "[You > " + toPDO.getDisplayName() + ChatColor.DARK_GRAY + "]" + ChatColor.WHITE + ":");
-            fromComp.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("PM " + toPDO.getPlainNick()).create()));
+            fromComp.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("PM " + toPDO.getPlainNick())));
             fromComp.event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pm " + toPDO.getName() + " "));
             fromComp.append(" ").reset();
             
@@ -137,7 +138,7 @@ public class ChatHandler {
         //Generate the name portion of the predicate and affix any prefixes i.e. [op]
         TextComponent form = new TextComponent(predicatePrefix + playerDisplayName);
             form.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pm " + playerName + " "));
-            form.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("/pm " + playerName).create()));
+            form.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("/pm " + playerName)));
 
         //Generate the divider component. The color specified will also be the base color for the rest of the message
         TextComponent divider = new TextComponent(dividerString);
@@ -192,7 +193,7 @@ public class ChatHandler {
     public static TextComponent assembleURLComponent(String urlPart) {
         TextComponent urlComp = new TextComponent(urlPart);
                     urlComp.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, urlPart));
-                    urlComp.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Open Link").create()));
+                    urlComp.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("Open Link")));
                     urlComp.setUnderlined(Boolean.TRUE);
         return urlComp;
     }
@@ -211,6 +212,11 @@ public class ChatHandler {
         logMessage(logmsg, "general");
     }
     
+    /** Transmit a message that originates outside of the server instance to all
+     * online players.
+     * @param serverName The name of the server that originates the message
+     * @param baseComp The baseComponent portion of this message
+     */
     public static void broadcast(String serverName, BaseComponent[] baseComp){
         BaseComponent[] comp = new ComponentBuilder(ChatColor.GREEN + "[" + serverName + "]")
                 .append(baseComp)
@@ -225,8 +231,8 @@ public class ChatHandler {
         logMessage(logmsg, "general");
     }
 
-    /** Transmit a BaseComponent[] message to all online player with opchat permission
-     * @param baseComp 
+    /** Transmit a BaseComponent[] message to all online player with opchat permission.
+     * @param baseComp The BaseComponent[] that makes up this message
      */
     public static void opBroadcast(BaseComponent[] baseComp){
         JawaChat.opsOnline.values().forEach((target) -> {
@@ -239,6 +245,11 @@ public class ChatHandler {
         logMessage(logmsg, "op channel");
     }
     
+    /** Transmit a BaseComponent[] message with origins outside the server instance 
+     * to all online players with the opchat permission.
+     * @param serverName The name of the server that originates the message
+     * @param baseComp The baseComponent portion of this message
+     */
     public static void opBroadcast(String serverName, BaseComponent[] baseComp){
         BaseComponent[] comp = new ComponentBuilder(ChatColor.GREEN + "[" + serverName + "]")
                 .append(baseComp)
@@ -264,21 +275,21 @@ public class ChatHandler {
     }
     
     public static void setReplier(Player from, Player to){
-        replies.put(from, to);
+        REPLIES.put(from, to);
     }
     
     public static void resetReplier(Player from){
-        if (replies.containsKey(from)) {
-            replies.remove(from);
+        if (REPLIES.containsKey(from)) {
+            REPLIES.remove(from);
         }
     }
     
     public static Player replyTO(Player from){
-        return replies.get(from);
+        return REPLIES.get(from);
     }
     
     public static boolean hasReplier(Player from){
-        return replies.containsKey(from);
+        return REPLIES.containsKey(from);
     }
     
     //MUTE Methods
@@ -288,42 +299,43 @@ public class ChatHandler {
     }
     
     public static boolean isMuted(UUID uuid){
-        return muted.contains(uuid);
+        return MUTED.contains(uuid);
     }
     
     public static void mute(PlayerDataObject player){
-        muted.add(player.getUniqueID());
+        MUTED.add(player.getUniqueID());
         player.mute();
     }
     
     public static void unmute(PlayerDataObject player){
-        muted.remove(player.getUniqueID());
+        MUTED.remove(player.getUniqueID());
         player.unMute();
     }
     
     public static void playerJoin(PlayerDataObject player, String joinMessage){
         if (JawaChat.crosslinkEnabled) {
-            Message joinMsg = new Message(CrossLinkMessageHandler.getUUID(), Message.MESSAGETYPE.INFOBROADCAST, JawaChat.getServerName());
+            CrossLinkMessage joinMsg = new CrossLinkMessage(CrossLinkMessageHandler.getUUID(), CrossLinkMessage.MESSAGETYPE.INFOBROADCAST, JawaChat.getServerName());
             joinMsg.setInfoBroadcast(joinMessage);
             CrossLinkMessageHandler.sendMessage(joinMsg);
         }
         
         if (player.isMuted()) {
-            muted.add(player.getUniqueID());
+            MUTED.add(player.getUniqueID());
         }
     }
     
     public static void playerQuit(Player player, String quitMessage){
         if (JawaChat.crosslinkEnabled) {
-            Message quitMsg = new Message(CrossLinkMessageHandler.getUUID(), Message.MESSAGETYPE.INFOBROADCAST, JawaChat.getServerName());
+            CrossLinkMessage quitMsg = new CrossLinkMessage(CrossLinkMessageHandler.getUUID(), CrossLinkMessage.MESSAGETYPE.INFOBROADCAST, JawaChat.getServerName());
             quitMsg.setInfoBroadcast(quitMessage);
             CrossLinkMessageHandler.sendMessage(quitMsg);
         }
         
-        if (muted.contains(player.getUniqueId())){
-            muted.remove(player.getUniqueId());
+        if (MUTED.contains(player.getUniqueId())){
+            MUTED.remove(player.getUniqueId());
         }
     }
+    
     
     private static void logMessage(String message, String channel){
         Logger.getLogger("ServerChat").log(Level.INFO, "[{0}] {1}", new Object[]{channel, message});

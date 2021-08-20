@@ -27,33 +27,30 @@ import org.bukkit.Bukkit;
  * @author Jawamaster (Arthur Bulin)
  */
 public class JawaJanitor {
-    
-    private JawaChat plugin;
-    private HashMap<String,Integer> maintenanceTasks;
+    private final static Logger LOGGER = Logger.getLogger("[JawaChat][OpListCleanUp] ");
+    private final static HashMap<String,Integer> MAINTENANCETASKS = new HashMap();
     
     /** Construct the JawaJaniror object. This triggers the creation of the initial
      * Maintenance task.
      * @param plugin 
      */
-    public JawaJanitor (JawaChat plugin) {
-        this.plugin = plugin;
-        maintenanceTasks = new HashMap();
-        Logger.getLogger("JawaChat][JawaJanitor").log(Level.INFO, "Creating Maintenance Task");
+    public static void JawaJanitor () {
+        LOGGER.log(Level.INFO, "Creating Maintenance Task");
         scheduleMaintenanceTasks();
     } 
     
     /** Putting calls to maintenance tasks here will alow them to be tracked. This
      * isn't really useful at the moment.
      */
-    private void scheduleMaintenanceTasks(){
-        maintenanceTasks.put("OPLIST", scheduleOpListCleanup());
+    private static void scheduleMaintenanceTasks(){
+        MAINTENANCETASKS.put("OPLIST", scheduleOpListCleanup());
     }
     
     /** Create a task to maintain the integrity of the OpsList. This prevents odd
      * events that aren't captured in code to repair a broken list.
      * @return 
      */
-    private int scheduleOpListCleanup(){
+    private static int scheduleOpListCleanup(){
         int taskid = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(JawaChat.plugin, () -> {
             int opChatPlayers = 0;
             opChatPlayers = Bukkit.getServer().getOnlinePlayers().stream().filter((player) -> 
@@ -65,8 +62,15 @@ public class JawaJanitor {
                 Bukkit.getServer().getOnlinePlayers().stream().filter((player) -> (player.hasPermission("jawachat.opchat") || player.isOp())).forEachOrdered((player) -> {
                     JawaChat.opsOnline.put(player.getUniqueId(), player);
                 });
-                if (JawaChat.debug) Logger.getLogger("[JawaChat][OpListCleanUp] ").log(Level.INFO, "The online ops list has been dumped and resynced. This means something strange happened.");
+                if (JawaChat.debug) LOGGER.log(Level.INFO, "The online ops list has been dumped and resynced. This means something strange happened.");
             }
+        }, 3000, 3000);
+        return taskid;
+    }
+    
+    private int scheduleNameScan(){
+        int taskid = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(JawaChat.plugin, () -> {
+            
         }, 3000, 3000);
         
         return taskid;

@@ -5,11 +5,10 @@
  */
 package jawamaster.jawachat.handlers;
 
+import java.util.HashMap;
 import java.util.UUID;
 import net.jawasystems.jawacore.PlayerManager;
 import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
-import net.jawasystems.jawacore.handlers.ESHandler;
-import net.jawasystems.jawacore.utils.ESRequestBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -20,13 +19,23 @@ import org.json.JSONObject;
  * @author Arthur Bulin
  */
 public class FormattingHandler {
-
-    public static void updatePlayerName(Player target) {
-        PlayerDataObject pdObject = new PlayerDataObject(target.getUniqueId());
-        pdObject = ESHandler.runMultiIndexSearch(ESRequestBuilder.buildSingleMultiSearchRequest("players", "_id", target.getUniqueId().toString()), pdObject);
-        compilePlayerNameOnJoin(target.getUniqueId(), pdObject);
+    
+    private static final HashMap<UUID, Integer> DISPLAYNAMEHASHES = new HashMap();
+    private static final HashMap<UUID, Integer> LISTNAMEHASHES = new HashMap();
+    
+    public static void clearHashs(UUID target){
+        DISPLAYNAMEHASHES.remove(target);
+        LISTNAMEHASHES.remove(target);
     }
-
+    
+    public static boolean isHashed(Player target){
+        return !(
+                !DISPLAYNAMEHASHES.containsKey(target.getUniqueId()) ||
+                (target.getDisplayName().hashCode() != DISPLAYNAMEHASHES.get(target.getUniqueId())) ||
+                !LISTNAMEHASHES.containsKey(target.getUniqueId()) ||
+                (target.getPlayerListName().hashCode() != LISTNAMEHASHES.get(target.getUniqueId())));
+    }
+    
     public static void recompilePlayerName(UUID uuid){
         recompilePlayerName(Bukkit.getServer().getPlayer(uuid));
     }
@@ -54,14 +63,14 @@ public class FormattingHandler {
         
         if (!pdObject.getNickName().equals("")) displayName += ChatColor.translateAlternateColorCodes('&', pdObject.getNickName());
         else displayName += pdObject.getRankColor() + pdObject.getName();
+        DISPLAYNAMEHASHES.put(target, displayName.hashCode());
         pdObject.getPlayer().setDisplayName(displayName);
         //pdObject.setCompiledName(displayName);
 
     }
     
     /** Compiles the player listname from the given information.
-     * @param pdObject
-     * @param target 
+     * @param pdObject 
      */
     public static void compileListName(PlayerDataObject pdObject){
         //Player listname compilation
@@ -76,7 +85,7 @@ public class FormattingHandler {
                     pdObject.getRankColor() + 
                     pdObject.getName();
         }
-
+        LISTNAMEHASHES.put(pdObject.getUniqueID(), listName.hashCode());
         pdObject.getPlayer().setPlayerListName(listName);
     }
     

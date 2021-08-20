@@ -40,7 +40,7 @@ public class CrossLinkNode {
     private static UUID serverUUID;
     private static String serverAddress;
     private static int serverPort;
-    private static Message validationRequest;
+    private static CrossLinkMessage validationRequest;
     
     private static Thread nodeThread;
     
@@ -50,7 +50,12 @@ public class CrossLinkNode {
         serverPort = port;
         serverUUID = uuid;
         
-        validationRequest = new Message(uuid, Message.MESSAGETYPE.VALIDATEREQUEST, JawaChat.getServerName());
+        validationRequest = new CrossLinkMessage(uuid, CrossLinkMessage.MESSAGETYPE.VALIDATEREQUEST, JawaChat.getServerName());
+        createNode();
+    }
+    
+    public static void restartCrossLinkNode(){
+        LOGGER.log(Level.INFO, "Attempting to restart the CrossLink Node...");
         createNode();
     }
 
@@ -90,8 +95,15 @@ public class CrossLinkNode {
                             CrossLinkMessageHandler.sendMessage(validationRequest);
                         }
                         
-                        //Terminate this thread as it is no longer needed.
-                        this.interrupt();
+                        try {
+                            //Wait this thread so it can be used later if needed
+                            synchronized (this) {
+                                this.wait();
+                            }
+                        } catch (InterruptedException ex) {
+                            LOGGER.log(Level.SEVERE,"Unable to wait. Terminating crosslink.");
+                            this.interrupt();
+                        }
                         
                     } catch (ConnectException ex) {
                         try {
@@ -99,9 +111,8 @@ public class CrossLinkNode {
                             synchronized (this) {
                                 this.wait(30000);
                             }
-                            continue;
                         } catch (InterruptedException ex1) {
-                            LOGGER.log(Level.SEVERE, null, ex1);
+                            this.interrupt();
                         }
                     } catch (UnknownHostException ex) {
                         LOGGER.log(Level.SEVERE, null, ex);

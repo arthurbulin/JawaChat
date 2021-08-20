@@ -37,12 +37,13 @@ public class CrossLinkMessageHandler {
     private static String serverAddress;
     private static int serverPort;
     
+    
     //=======================Queues===========================
     //Message queue for node
-    private static final Queue<Message> messageQueue = new LinkedBlockingQueue<>();
+    private static final Queue<CrossLinkMessage> messageQueue = new LinkedBlockingQueue<>();
     
     //Message queues for Controller
-    private static final HashMap<Integer,Queue<Message>> messageQueues = new HashMap();
+    private static final HashMap<Integer,Queue<CrossLinkMessage>> messageQueues = new HashMap();
     
     //=======================Thread Maps===========================
     //Threads mapped to server names for the Controller
@@ -53,7 +54,12 @@ public class CrossLinkMessageHandler {
     private static CrossLinkInput nodeInputThread;
     private static CrossLinkOutput nodeOutputThread;
 
-
+    /** Resolve if controller or node and initiate the respective threads.
+     * @param role
+     * @param uuid
+     * @param address
+     * @param port 
+     */
     public static void initializeCrossLinkMessageHandler(String role, UUID uuid, String address, int port) {
         serverUUID = uuid;
         serverAddress = address;
@@ -71,6 +77,9 @@ public class CrossLinkMessageHandler {
             LOGGER.log(Level.SEVERE, "The defined crosslink role was not understood. Crosslink has not been started. Please choose either controller or node");
     }
     
+    /** Return this server's UUID
+     * @return 
+     */
     public static UUID getUUID(){
         return serverUUID;
     }    
@@ -80,7 +89,7 @@ public class CrossLinkMessageHandler {
      * @param queueCode
      * @return 
      */
-    public static synchronized Message pollQueue(int queueCode) {
+    public static synchronized CrossLinkMessage pollQueue(int queueCode) {
         if (isController)
             return messageQueues.get(queueCode).poll();
         else
@@ -116,7 +125,7 @@ public class CrossLinkMessageHandler {
     public static synchronized void registerOutPutThread(int queueCode, CrossLinkOutput t){
         if (isController){
             outputThreads.put(queueCode, t);
-            //System.out.print(outputThreads);
+            //System.out.print(outputThreads);initializeCrossLinkMessageHandler
         }
         else
             nodeOutputThread = t;
@@ -135,7 +144,7 @@ public class CrossLinkMessageHandler {
      * @param messageIn
      * @param queueCode 
      */
-    public static void sendMessage(Message messageIn, int queueCode){
+    public static void sendMessage(CrossLinkMessage messageIn, int queueCode){
         if (JawaChat.debug) {
             LOGGER.log(Level.INFO, "Sending message to ", queueCode);
         }
@@ -148,7 +157,7 @@ public class CrossLinkMessageHandler {
     /** Send a message to all connected nodes.
      * @param messageIn 
      */
-    public static void sendMessage(Message messageIn) {
+    public static void sendMessage(CrossLinkMessage messageIn) {
         //If server is a Controller then we need to add the message to each active queue
         //then notify each server thread
         //TODO deal with message routing
@@ -170,4 +179,19 @@ public class CrossLinkMessageHandler {
         }
         
     }
+    
+    public static void terminate(){
+        if (JawaChat.getCrossLinkRole().equalsIgnoreCase("CONTROLLER")) {
+            
+        } else {
+            //Request that the output terminates
+            sendMessage(new CrossLinkMessage(JawaChat.getCrossLinkUUID(), CrossLinkMessage.MESSAGETYPE.TERMINATE, JawaChat.getCrossLinkHost()));
+        }
+    }
+    
+//    public static String getStatus(){
+//        if (isController) {
+//            
+//        }
+//    }
 }

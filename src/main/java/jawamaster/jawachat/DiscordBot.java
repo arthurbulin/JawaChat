@@ -16,8 +16,6 @@
  */
 package jawamaster.jawachat;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,11 +26,7 @@ import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
 import net.jawasystems.jawacore.handlers.ESHandler;
 import net.jawasystems.jawacore.utils.TimeParser;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
@@ -74,14 +68,13 @@ public class DiscordBot {
         this.token = token;
         this.api = new DiscordApiBuilder().setToken(token).login().join();
         
-        loadPermissions();
-        buildRankMap();
+        //buildRankMap();
+        //loadPermissions();
+        
         
         //buildRankMap();
         //buildChannelMap();
-        
-
-        Logger.getLogger("DiscordBot").log(Level.INFO, "{0} has been initialized as a discord bot with token: {1}", new Object[]{name, token});
+        LOGGER.log(Level.INFO, "{0} has been initialized as a discord bot with token: {1}", new Object[]{name, token});
         
     }
     
@@ -107,6 +100,9 @@ public class DiscordBot {
      */
     public void initiateListener() {
         //buildRankMap();
+        for (Server serv : api.getServers()){
+            System.out.println(serv.getName());
+        }
         
         api.addMessageCreateListener(event -> {
             /* Command Logic:
@@ -117,6 +113,13 @@ public class DiscordBot {
                     - server commands - control and manage the minecraft server from discord
                     - config commands - configure the bot remotely
             */
+            System.out.println(event.getMessageAuthor() + event.getMessageContent());
+            if (event.getMessageContent().equals("!ping")){
+                System.out.println("ping-pong");
+                MessageBuilder msg = new MessageBuilder();
+                msg.append("pong!");
+                msg.send(event.getChannel());
+            }
             if (event.getMessageContent().matches("!(FoxelBot|foxelbot)\\s.*")) {
                 String[] commandMessage = event.getMessageContent().split(" ");
                 if (commandMessage[1].equalsIgnoreCase("link")) {
@@ -156,6 +159,8 @@ public class DiscordBot {
                 msg.append("Role: " + role.getName() + " with id " + role.getIdAsString() + "\r");
         }
         msg.send(event.getChannel());
+        
+        
         
     }
 
@@ -228,7 +233,7 @@ public class DiscordBot {
     private void getMinecraftLinkInfo(String messageContent, TextChannel channel) {
         String user = messageContent.replaceFirst("!(foxebot|FoxelBot)\\sidentify\\s", "");
         String userID = null;
-        for (User cachedUser : api.getCachedUsers()) {
+        for (User cachedUser : api.getServerById(93446384836939776L).get().getMembers()) {
 
             if (cachedUser.getDiscriminatedName().equalsIgnoreCase(user)) {
                 userID = cachedUser.getDiscriminatedName();

@@ -16,7 +16,7 @@
  */
 package jawamaster.jawachat.events;
 
-import jawamaster.jawachat.crosslink.Message;
+import jawamaster.jawachat.crosslink.CrossLinkMessage;
 import jawamaster.jawachat.handlers.ChatHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
@@ -30,7 +30,7 @@ public class CrossLinkMessageReceived extends Event{
     
     private static final HandlerList handlers = new HandlerList();
     
-    public CrossLinkMessageReceived (Message message){
+    public CrossLinkMessageReceived (CrossLinkMessage message){
         //super(true);
         System.out.println("CrossLinkMessageReceived Event");
         //message.getChatMessage().getMessage();

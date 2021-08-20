@@ -9,7 +9,6 @@ import java.util.UUID;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.javacord.api.entity.channel.TextChannel;
-import org.json.JSONObject;
 
 /**
  *

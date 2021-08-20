@@ -48,7 +48,7 @@ public class CrossLinkOutput extends Thread {
             LOGGER.log(Level.INFO, "A CrossLinkOutput thread has been started");
         }
         while(true){
-            Message outputMessage;
+            CrossLinkMessage outputMessage;
             
             //Get message
             synchronized (this) {
@@ -59,12 +59,12 @@ public class CrossLinkOutput extends Thread {
             if (outputMessage != null) {
                 
                 //Validate operation
-                if (outputMessage.getMessageType() == Message.MESSAGETYPE.VALIDATEAPPROVAL) {
+                if (outputMessage.getMessageType() == CrossLinkMessage.MESSAGETYPE.VALIDATEAPPROVAL) {
                     isValidated = true;
                 }
                 
                 //Request Validation
-                if (outputMessage.getMessageType() == Message.MESSAGETYPE.VALIDATEREQUEST) {
+                if (outputMessage.getMessageType() == CrossLinkMessage.MESSAGETYPE.VALIDATEREQUEST) {
                     LOGGER.log(Level.INFO, "Sending validation request to Controller");
                 }
                 
@@ -72,15 +72,24 @@ public class CrossLinkOutput extends Thread {
                 try {
                     objectOutputStream.writeObject(outputMessage);
                 } catch (IOException ex) {
-                    Logger.getLogger(CrossLinkOutput.class.getName()).log(Level.SEVERE, null, ex);
+                    if (outputMessage.getMessageType() == CrossLinkMessage.MESSAGETYPE.TERMINATE) {
+                        LOGGER.log(Level.SEVERE, "Failed to transmit terminiation message to remote thread. Link may already be down.");
+                        this.interrupt();
+                    }
+                    else {
+                        LOGGER.log(Level.SEVERE, "Connection lost");
+                        this.interrupt();
+                    }
+                    //LOGGER.log(Level.SEVERE, null, ex);
+                    
                 }
                 
                 //Handle termination of connection
-                if (outputMessage.getMessageType() == Message.MESSAGETYPE.TERMINATE) {
+                if (outputMessage.getMessageType() == CrossLinkMessage.MESSAGETYPE.TERMINATE) {
                     try {
                         objectOutputStream.close();
                     } catch (IOException ex) {
-                        Logger.getLogger(CrossLinkOutput.class.getName()).log(Level.SEVERE, null, ex);
+                        LOGGER.log(Level.SEVERE, "Failed to close output stream, may already be closed");
                     }
                     
                     synchronized (this) {
@@ -95,7 +104,8 @@ public class CrossLinkOutput extends Thread {
                     try {
                         this.wait();
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(CrossLinkOutput.class.getName()).log(Level.SEVERE, null, ex);
+                        this.interrupt();
+                        //LOGGER.log(Level.SEVERE, null, ex);
                     }
                 }
             }

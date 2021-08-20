@@ -16,11 +16,9 @@
  */
 package jawamaster.jawachat;
 
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import jawamaster.jawachat.commands.DiscordLink;
 import jawamaster.jawachat.commands.Mute;
@@ -71,10 +69,10 @@ public class JawaChat extends JavaPlugin {
     private static String serverHost;
 
     //HashMaps for player controls
-    public static Map<UUID, String> playerTags;
-    public static Map<UUID, String> playerNicks;
-    public static Map<UUID, String> playerStars;
-    public static Map<UUID, String> playerCompiledName;
+//    public static Map<UUID, String> playerTags;
+//    public static Map<UUID, String> playerNicks;
+//    public static Map<UUID, String> playerStars;
+//    public static Map<UUID, String> playerCompiledName;
     public static Map<UUID, Player> opsOnline;
 
     public static String pluginSlug = "[JawaChat] ";
@@ -94,20 +92,16 @@ public class JawaChat extends JavaPlugin {
      */
     @Override
     public void onEnable() {
-        try {
-            loadConfig();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(JawaChat.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        loadConfig();
 
         //intiateChatLogging();
         plugin = this;
-        jawaJanitor = new JawaJanitor(plugin);
+        JawaJanitor.JawaJanitor();
         //Initiate maps
-        playerTags = new HashMap();
-        playerNicks = new HashMap();
-        playerStars = new HashMap();
-        playerCompiledName = new HashMap();
+//        playerTags = new HashMap();
+//        playerNicks = new HashMap();
+//        playerStars = new HashMap();
+//        playerCompiledName = new HashMap();
         opsOnline = new HashMap();
 
         discordConnected = initiateDiscordLink();
@@ -144,20 +138,20 @@ public class JawaChat extends JavaPlugin {
      */
     @Override
     public void onDisable() {
-        //playerRanks.clear();
-        playerTags.clear();
-        playerNicks.clear();
-        playerStars.clear();
+//        //playerRanks.clear();
+//        playerTags.clear();
+//        playerNicks.clear();
+//        playerStars.clear();
         //playerCompiledName.clear();
+        if (crosslinkEnabled) CrossLinkMessageHandler.terminate();
         opsOnline.clear();
     }
 
     /**
      * This method handles loading of the plugin's config and setting of key
      * variables.
-     * @throws FileNotFoundException
      */
-    public void loadConfig() throws FileNotFoundException {
+    public void loadConfig() {
         //Handle the config generation and loading
         this.saveDefaultConfig();
         config = this.getConfig();
@@ -188,9 +182,10 @@ public class JawaChat extends JavaPlugin {
      * @return
      */
     private static boolean initiateDiscordLink() {
-        if (getConfiguration().getBoolean("discord-link", false)) {
-            if (getConfiguration().contains("discord-token")) {
-                foxelBot = new DiscordBot("FoxelBot", getConfiguration().getString("discord-token"));
+        
+        if (getConfiguration().getConfigurationSection("discord-configuration").getBoolean("discord-link", false)) {
+            if (getConfiguration().getConfigurationSection("discord-configuration").contains("discord-token")) {
+                foxelBot = new DiscordBot("FoxelBot", getConfiguration().getConfigurationSection("discord-configuration").getString("discord-token"));
                 foxelBot.initiateListener();
                 return true;
             } else {
@@ -237,5 +232,40 @@ public class JawaChat extends JavaPlugin {
         } else {
             crosslinkEnabled = false;
         }
+    }
+    
+    /** Returns true is crosslink is enabled.
+     * @return 
+     */
+    public static boolean isCrossLinkEnabled(){
+        return crosslinkEnabled;
+    }
+    
+    /** Get the crosslink server role.
+     * @return 
+     */
+    public static String getCrossLinkRole(){
+        return serverRole;
+    }
+    
+    /** Get the crosslink UUID
+     * @return 
+     */
+    public static UUID getCrossLinkUUID(){
+        return serverUUID;
+    }
+    
+    /** Get the crosslink host.
+     * @return 
+     */
+    public static String getCrossLinkHost(){
+        return serverHost;
+    }
+    
+    /** Get the crosslink port
+     * @return 
+     */
+    public static int getCrossLinkPort(){
+        return serverPort;
     }
 }

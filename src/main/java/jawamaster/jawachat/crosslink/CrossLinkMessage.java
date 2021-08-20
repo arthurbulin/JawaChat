@@ -27,7 +27,7 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
  *
  * @author Jawamaster (Arthur Bulin)
  */
-public class Message implements Serializable {
+public class CrossLinkMessage implements Serializable {
     private final MESSAGETYPE type;
     private String playerName;
     private String playerDisplayName;
@@ -49,13 +49,13 @@ public class Message implements Serializable {
         TERMINATE
     }
     
-    public Message(UUID serverUUID, MESSAGETYPE type, String friendlyServerName){
+    public CrossLinkMessage(UUID serverUUID, MESSAGETYPE type, String friendlyServerName){
         this.originatingServer = serverUUID;
         this.type = type;
         this.friendlyServerName = friendlyServerName;
     }
     
-//============ Common to all Message types ===============
+//============ Common to all CrossLinkMessage types ===============
     /** Get the UUID of the originating server.
      * @return 
      */
@@ -77,7 +77,7 @@ public class Message implements Serializable {
         return friendlyServerName;
     }
 
- //============ Common to CHAT* Message types ===============
+ //============ Common to CHAT* CrossLinkMessage types ===============
     /** Sets the Chat message  this is only applicable if the message type is a CHAT* type
      * @param playerName
      * @param playerDisplayName
@@ -105,7 +105,7 @@ public class Message implements Serializable {
         }
     }
     
-//============ INFO Message types ===============
+//============ INFO CrossLinkMessage types ===============
     /** Get the message from the INFOBROADCAST message.
      * @return 
      */

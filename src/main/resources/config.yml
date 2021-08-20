@@ -1,4 +1,3 @@
-server-name: Main
 debug: false
 chat-settings:
     format: "{WORLD}{TAG}{DISPLAYNAME}: {MESSAGE}"

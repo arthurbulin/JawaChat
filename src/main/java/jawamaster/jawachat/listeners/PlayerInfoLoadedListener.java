@@ -20,7 +20,6 @@ import org.bukkit.Bukkit;
  * @author Arthur Bulin
  */
 public class PlayerInfoLoadedListener implements Listener{
-    private static int taskid;
     
     @EventHandler
     public static void PlayerInfoLoadedListener(PlayerInfoLoaded event) throws IOException{
