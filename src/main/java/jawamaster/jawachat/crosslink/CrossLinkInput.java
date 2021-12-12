@@ -109,11 +109,17 @@ public class CrossLinkInput extends Thread {
                             case CHATGENERAL:
                                 synchronized (this) {
                                     ChatHandler.broadcast(inputMessage.getServerFriendlyName(), inputMessage.getChatMessage());
+                                    if (JawaChat.isChatLoggingEnabled()) {
+                                        ChatHandler.logMessage(inputMessage.getChatMessageString(), "broadcast", inputMessage.getServerFriendlyName(), inputMessage.getPlayerSessionID(), inputMessage.getPlayerUUID(), isValidated, true);
+                                    }
                                 }
                                 break;
                             case CHATOP:
                                 synchronized (this) {
                                     ChatHandler.opBroadcast(inputMessage.getServerFriendlyName(), inputMessage.getChatMessage());
+                                    if (JawaChat.isChatLoggingEnabled()) {
+                                        ChatHandler.logMessage(inputMessage.getChatMessageString(), "broadcast", inputMessage.getServerFriendlyName(), inputMessage.getPlayerSessionID(), inputMessage.getPlayerUUID(), isValidated, true);
+                                    }
                                 }
                                 break;
                             case INFOBROADCAST:

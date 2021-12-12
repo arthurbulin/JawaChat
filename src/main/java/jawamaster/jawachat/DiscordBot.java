@@ -244,7 +244,7 @@ public class DiscordBot {
         if (userID == null) {
             channel.sendMessage("I'm sorry I don't recogonize that user name. Please use the user's discriminated name. i.e. " + api.getYourself().getDiscriminatedName());
         } else {
-            PlayerDataObject target = ESHandler.getPlayerData("players", "discord-data.discord-name", userID);
+            PlayerDataObject target = ESHandler.searchPlayerData("players", "discord-data.discord-name", userID);
             if (target == null) {
                 channel.sendMessage(user + " does not appear to be linked to Discord");
             } else {
@@ -323,7 +323,7 @@ public class DiscordBot {
     }
     
     private static PlayerDataObject getLinkedUser(User user){
-        return ESHandler.getPlayerData("players", "discord-data.discord-id", user.getIdAsString());
+        return ESHandler.searchPlayerData("players", "discord-data.discord-id", user.getIdAsString());
     }
 
 }

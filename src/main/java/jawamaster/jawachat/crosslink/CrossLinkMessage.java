@@ -36,6 +36,8 @@ public class CrossLinkMessage implements Serializable {
     private String message; 
     private final UUID originatingServer;
     private final String friendlyServerName;
+    private final String PLAYERUUID;
+    private final String SESSIONID;
     
     public enum MESSAGETYPE {
         CHATGENERAL,
@@ -53,6 +55,16 @@ public class CrossLinkMessage implements Serializable {
         this.originatingServer = serverUUID;
         this.type = type;
         this.friendlyServerName = friendlyServerName;
+        this.PLAYERUUID = null;
+        this.SESSIONID = null;
+    }
+    
+    public CrossLinkMessage(UUID serverUUID, MESSAGETYPE type, String friendlyServerName, String playerUUID, String sessionID){
+        this.originatingServer = serverUUID;
+        this.type = type;
+        this.friendlyServerName = friendlyServerName;
+        this.PLAYERUUID = playerUUID;
+        this.SESSIONID = sessionID;
     }
     
 //============ Common to all CrossLinkMessage types ===============
@@ -75,6 +87,20 @@ public class CrossLinkMessage implements Serializable {
      */
     public String getServerFriendlyName(){
         return friendlyServerName;
+    }
+    
+    /** This returns the player's UUID in string form. This will always be set. This was added to support chat logging.
+     * @return The player UUID in string form
+     */
+    public String getPlayerUUID(){
+        return PLAYERUUID;
+    }
+    
+    /** This returns the player's Session ID from the remote server. This will always be set. This was added to support chat logging.
+     * @return  The player's session ID from the remote server. If the remote server does not have session tracking enabled this will be null.
+     */
+    public String getPlayerSessionID(){
+        return SESSIONID;
     }
 
  //============ Common to CHAT* CrossLinkMessage types ===============
@@ -103,6 +129,13 @@ public class CrossLinkMessage implements Serializable {
         } else {
             return null;
         }
+    }
+    
+    /** Returns the raw string message.
+     * @return String message
+     */
+    public String getChatMessageString(){
+        return message;
     }
     
 //============ INFO CrossLinkMessage types ===============

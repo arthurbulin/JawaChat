@@ -5,66 +5,64 @@
  */
 package jawamaster.jawachat.listeners;
 
-import java.io.IOException;
 import jawamaster.jawachat.JawaChat;
 import jawamaster.jawachat.handlers.ChatHandler;
+import net.jawasystems.jawacore.handlers.SessionTrackHandler;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
         
-/**
- *
+/** This class is an EventHandler for AsyncPlayerChatEvents. It will cancel chat events and deal with them
+ * accordingly based on the user's permissions and mute status. It will then pass the message along to the
+ * appropriate method within the ChatHandler depending if the message is general chat, or op chat and will
+ * take into account if the user is muted.
  * @author Arthur Bulin
  */
 public class OnPlayerChat implements Listener {
     
+    /** Listens for the AsyncPlayerChatEvent and will resolve the user permissions and status. It will route
+     * to either op or general chat and resolve mute status and permissions. It will log the message to the
+     * ES chatlog datastream. 
+     * @param event The passed event
+     */
     @EventHandler
-    public static void OnPlayerChat(AsyncPlayerChatEvent e) throws IOException {
-        Player player = e.getPlayer();
-//        String format = JawaChat.playerCompiledName.get(player.getUniqueId()) + ": %2$s";
-        //FIXME Could be a problem later on since I am setting display name to include the star and tag it seems
-//        String format = player.getDisplayName() + ChatColor.WHITE + ": %2$s";
-//        e.setFormat(format);
-        e.setCancelled(true);
+    public static void OnPlayerChat(AsyncPlayerChatEvent event)  {
+        //Cancel the event
+        event.setCancelled(true);
         
-        if (e.getMessage().startsWith("#")) {
-            if (JawaChat.opsOnline.containsKey(player.getUniqueId()) || player.hasPermission("jawachat.opchat")){
-                ChatHandler.opChat(player, e.getMessage());
+        //Set Logging variables
+        boolean muted = false;
+        String type = "broadcast";
+        
+        //If the messate is opchat
+        if (event.getMessage().startsWith("#")) {
+            type = "opchat";
+            if (JawaChat.opsOnline.containsKey(event.getPlayer().getUniqueId()) || event.getPlayer().hasPermission("jawachat.opchat")){
+                ChatHandler.opChat(event.getPlayer(), event.getMessage());
             } else {
-                player.sendMessage(ChatColor.RED + "You do not have permission to perform that function.");
+                event.getPlayer().sendMessage(ChatColor.RED + "You do not have permission to perform that function.");
+                muted = true;
             }
-                
-        } else if (e.getMessage().contains("@staff")){
-            ChatHandler.generalChat(player, e.getMessage());
-            JawaChat.getFoxelBot().notifyStaff(e.getPlayer(), e.getMessage());
-        
-        } else if (ChatHandler.isMuted(e.getPlayer().getUniqueId())){
-            ChatHandler.mutedChat(player, e.getMessage());
-        }
+        } 
+        //If the user identifies @staff
+        else if (event.getMessage().contains("@staff")){
+            ChatHandler.generalChat(event.getPlayer(), event.getMessage());
+            JawaChat.getFoxelBot().notifyStaff(event.getPlayer(), event.getMessage());
+        } 
+        //If the user is muted
+        else if (ChatHandler.isMuted(event.getPlayer().getUniqueId())){
+            ChatHandler.mutedChat(event.getPlayer(), event.getMessage());
+        } 
+        //General chat with no specific conditions
         else {
-            ChatHandler.generalChat(player, e.getMessage());
+            ChatHandler.generalChat(event.getPlayer(), event.getMessage());
         }
-
-        //This should forward a plugin message to other bungeecord servers running 
-//        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-//        out.writeUTF("Forward");
-//        out.writeUTF("ALL");
-//        out.writeUTF("JawaChat-"+JawaChat.ServerName);
-//        out.writeUTF("message"); //Should be the subchannel
-//        
-//        ByteArrayOutputStream msgbytes = new ByteArrayOutputStream();
-//        DataOutputStream msgout = new DataOutputStream(msgbytes);
-//        msgout.writeUTF("[" + player.getWorld().getName() + "] " + player.getDisplayName() + ": " + e.getMessage());
-//        
-//        out.writeShort(msgbytes.toByteArray().length);
-//        out.write(msgbytes.toByteArray());
         
-        //JSONObject message = new JSONObject();
-//        message.put("message", e.getMessage());
-//        message.put("user", e.getPlayer().getUniqueId());
-//        message.put("username", e.getPlayer().getDisplayName());
+        //If enabled log to the datastream
+        if (JawaChat.isChatLoggingEnabled()) {
+            ChatHandler.logMessage(event.getMessage(), type, JawaChat.getIdentityServerName(), SessionTrackHandler.getSessionID(event.getPlayer()), event.getPlayer().getUniqueId().toString(), muted, false);
+        }
     }
     
 }

@@ -1,9 +1,11 @@
 name: JawaChat
 main: jawamaster.jawachat.JawaChat
-description: Controls chat functions and supplies various administrative commands.
-version: 2.0
-api-version: 1.16
+version: ${pom.version}
+description: "Controls chat functions and supplies various administrative commands."
+author: Jawamaster (Arthur Bulin)
+api-version: 1.17
 depends: JawaPermissions, JawaCore
+
 commands:
   setnick:
     description: Used to set the player's nick name

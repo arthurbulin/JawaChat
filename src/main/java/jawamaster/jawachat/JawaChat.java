@@ -168,11 +168,18 @@ public class JawaChat extends JavaPlugin {
         return config;
     }
     
-    /** Returns the Server's friendly name from config.
+    /** Returns the Server's friendly chat name from config.
      * @return 
      */
     public static String getServerName(){
         return serverName;
+    }
+    
+    /** Returns the Server's name identifier from the JawaCore config.
+     * @return 
+     */
+    public static String getIdentityServerName(){
+        return JawaCore.getServerName();
     }
 
     /**
@@ -267,5 +274,13 @@ public class JawaChat extends JavaPlugin {
      */
     public static int getCrossLinkPort(){
         return serverPort;
+    }
+    
+    /** Is chat logging enabled in JawaCore. This is backed by JawaCore.isChatLoggingEnabled()
+     * JawaCore handles all chat logging.
+     * @return true if chat logging is enabled in JawaCore. false if it is not enabled.
+     */
+    public static boolean isChatLoggingEnabled(){
+        return JawaCore.isChatLoggingEnabled();
     }
 }

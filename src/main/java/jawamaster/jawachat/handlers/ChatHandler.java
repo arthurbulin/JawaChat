@@ -8,6 +8,8 @@ package jawamaster.jawachat.handlers;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -18,8 +20,11 @@ import java.util.stream.Collectors;
 import jawamaster.jawachat.JawaChat;
 import jawamaster.jawachat.crosslink.CrossLinkMessageHandler;
 import jawamaster.jawachat.crosslink.CrossLinkMessage;
+import net.jawasystems.jawacore.JawaCore;
 import net.jawasystems.jawacore.PlayerManager;
 import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
+import net.jawasystems.jawacore.handlers.ESHandler;
+import net.jawasystems.jawacore.utils.ESRequestBuilder;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -209,7 +214,7 @@ public class ChatHandler {
         for (BaseComponent comp : baseComp){
             logmsg += comp.toPlainText();
         }
-        logMessage(logmsg, "general");
+        logMessageToConsole(logmsg, "general");
     }
     
     /** Transmit a message that originates outside of the server instance to all
@@ -228,7 +233,7 @@ public class ChatHandler {
         for (BaseComponent compp : comp){
             logmsg += compp.toPlainText();
         }
-        logMessage(logmsg, "general");
+        logMessageToConsole(logmsg, "general");
     }
 
     /** Transmit a BaseComponent[] message to all online player with opchat permission.
@@ -242,7 +247,7 @@ public class ChatHandler {
         for (BaseComponent comp : baseComp){
             logmsg += comp.toPlainText();
         }
-        logMessage(logmsg, "op channel");
+        logMessageToConsole(logmsg, "op channel");
     }
     
     /** Transmit a BaseComponent[] message with origins outside the server instance 
@@ -261,7 +266,7 @@ public class ChatHandler {
         for (BaseComponent compp : comp){
             logmsg += compp.toPlainText();
         }
-        logMessage(logmsg, "op channel");
+        logMessageToConsole(logmsg, "op channel");
     }
     
     /** Transmit a String message to all online players with the opchat permission.
@@ -271,7 +276,7 @@ public class ChatHandler {
         JawaChat.opsOnline.values().forEach((target) -> {
             target.sendMessage(message);
         });
-        logMessage(message, "op channel");
+        logMessageToConsole(message, "op channel");
     }
     
     public static void setReplier(Player from, Player to){
@@ -337,8 +342,33 @@ public class ChatHandler {
     }
     
     
-    private static void logMessage(String message, String channel){
+    private static void logMessageToConsole(String message, String channel){
         Logger.getLogger("ServerChat").log(Level.INFO, "[{0}] {1}", new Object[]{channel, message});
+    }
+    
+    /** Log a message to the ES database log
+     * @param message String message being sent
+     * @param recipient The UUID of the pm recipient or one of the following: broadcast, opchat
+     * @param server The server the message takes place one
+     * @param sessionID The player's session ID, null if session tracking is disabled
+     * @param sender The UUID of the sender
+     * @param mute boolean, true if the user is muted, false if the user is not
+     * @param routed boolean, true if the logging server is not the same as the origin server
+     */
+    public static void logMessage(String message, String recipient, String server, String sessionID, String sender, boolean mute, boolean routed){
+        Bukkit.getServer().getScheduler().runTaskAsynchronously(JawaChat.plugin, () -> {
+                JSONObject chatLog = new JSONObject();
+                chatLog.put("message", message.split("\\s+"));
+                chatLog.put("recipient", recipient);
+                chatLog.put("server", server);
+                chatLog.put("session-id", sessionID);
+                chatLog.put("sender", sender);
+                chatLog.put("mute", mute);
+                chatLog.put("routed", routed);
+                chatLog.put("@timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+                ESHandler.runAsyncSingleIndexRequest(ESRequestBuilder.createIndexRequest("chatlog-minecraft-" + JawaCore.chatIndexIdentity(), chatLog));
+        });
     }
     
     public static void generatePatterns(){
