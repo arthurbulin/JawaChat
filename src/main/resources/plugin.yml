@@ -3,7 +3,7 @@ main: jawamaster.jawachat.JawaChat
 version: ${pom.version}
 description: "Controls chat functions and supplies various administrative commands."
 author: Jawamaster (Arthur Bulin)
-api-version: 1.17
+api-version: 1.18
 depends: JawaPermissions, JawaCore
 
 commands:
