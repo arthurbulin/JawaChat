@@ -156,7 +156,7 @@ public class JawaChat extends JavaPlugin {
         this.saveDefaultConfig();
         config = this.getConfig();
         debug = (Boolean) config.get("debug");
-        serverName = (String) config.get("server-name");
+        serverName = JawaCore.getServerName();
         JawaCore.receiveConfigurations(this.getClass().getName(), config);
     }
 

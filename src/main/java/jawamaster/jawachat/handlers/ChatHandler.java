@@ -329,15 +329,15 @@ public class ChatHandler {
         }
     }
     
-    public static void playerQuit(Player player, String quitMessage){
-        if (JawaChat.crosslinkEnabled) {
+    public static void playerQuit(UUID player, String quitMessage){
+        if (JawaChat.crosslinkEnabled && quitMessage != null) {
             CrossLinkMessage quitMsg = new CrossLinkMessage(CrossLinkMessageHandler.getUUID(), CrossLinkMessage.MESSAGETYPE.INFOBROADCAST, JawaChat.getServerName());
             quitMsg.setInfoBroadcast(quitMessage);
             CrossLinkMessageHandler.sendMessage(quitMsg);
         }
         
-        if (MUTED.contains(player.getUniqueId())){
-            MUTED.remove(player.getUniqueId());
+        if (MUTED.contains(player)){
+            MUTED.remove(player);
         }
     }
     
@@ -367,7 +367,7 @@ public class ChatHandler {
                 chatLog.put("routed", routed);
                 chatLog.put("@timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
-                ESHandler.runAsyncSingleIndexRequest(ESRequestBuilder.createIndexRequest("chatlog-minecraft-" + JawaCore.chatIndexIdentity(), chatLog));
+                ESHandler.runAsyncSingleIndexRequest(ESRequestBuilder.createIndexRequest("chatlog", chatLog));
         });
     }
     

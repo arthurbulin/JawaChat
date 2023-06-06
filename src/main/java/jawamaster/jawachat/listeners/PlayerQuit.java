@@ -33,7 +33,7 @@ public class PlayerQuit implements Listener{
 //        if (JawaChat.playerCompiledName.containsKey(uuid)) JawaChat.playerCompiledName.remove(uuid);
         if (JawaChat.opsOnline.containsKey(uuid)) JawaChat.opsOnline.remove(uuid);
         FormattingHandler.clearHashs(uuid);
-        ChatHandler.playerQuit(player, event.getQuitMessage());
+        ChatHandler.playerQuit(player.getUniqueId(), event.getQuitMessage());
         
     }
 }

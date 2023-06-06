@@ -154,6 +154,13 @@ public class CrossLinkMessage implements Serializable {
     public void setInfoBroadcast(String infoBroadcastMsg){
         this.message = infoBroadcastMsg;
     }
+    
+    /** Returns true if there is message content. False if the message is null or empty.
+     * @return true if there is message data, false if there is no message data
+     */
+    public boolean hasMessageContent () {
+        return message != null || !message.isEmpty();
+    }
 
     
 }
