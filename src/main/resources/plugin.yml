@@ -31,8 +31,6 @@ commands:
     description: "Generates a linking code to be used with the FoxelBot discord bot"
     usage: "/discordlink"
     permission: jawachat.discordlink
-  breakcommand:
-    permission: breakcommand
     
 permissions:
   jawachat.discordlink:
@@ -53,5 +51,3 @@ permissions:
   jawachat.setnick:
     description: "Allows an admin to set the nickname of the player specified"
     default: op
-  breakcommand:
-    default: true
