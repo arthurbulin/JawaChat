@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Jawamaster (Arthur Bulin)
+ * Copyright (C) 2021 Jawamaster (Arthur Bulin)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +20,15 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-/** Useless test command, intentionally breaks, not used atm.
+/**
  *
  * @author Jawamaster (Arthur Bulin)
  */
-public class BreakCommand implements CommandExecutor{
+public class CrossLinkControl implements CommandExecutor{
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        System.out.println(args[100]);
-        return true;
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }

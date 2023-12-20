@@ -8,6 +8,7 @@ package jawamaster.jawachat.listeners;
 import java.util.UUID;
 import jawamaster.jawachat.JawaChat;
 import jawamaster.jawachat.handlers.ChatHandler;
+import jawamaster.jawachat.handlers.FormattingHandler;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,13 +26,14 @@ public class PlayerQuit implements Listener{
         UUID uuid = player.getUniqueId();
         
         //if (JawaChat.playerCompiledName.containsKey(uuid)) JawaChat.playerCompiledName.remove(uuid);
-        if (JawaChat.playerNicks.containsKey(uuid)) JawaChat.playerNicks.remove(uuid);
-        //if (JawaChat.playerRanks.containsKey(uuid)) JawaChat.playerRanks.remove(uuid);
-        if (JawaChat.playerStars.containsKey(uuid)) JawaChat.playerStars.remove(uuid);
-        if (JawaChat.playerTags.containsKey(uuid)) JawaChat.playerTags.remove(uuid);
-        if (JawaChat.playerCompiledName.containsKey(uuid)) JawaChat.playerCompiledName.remove(uuid);
+//        if (JawaChat.playerNicks.containsKey(uuid)) JawaChat.playerNicks.remove(uuid);
+//        //if (JawaChat.playerRanks.containsKey(uuid)) JawaChat.playerRanks.remove(uuid);
+//        if (JawaChat.playerStars.containsKey(uuid)) JawaChat.playerStars.remove(uuid);
+//        if (JawaChat.playerTags.containsKey(uuid)) JawaChat.playerTags.remove(uuid);
+//        if (JawaChat.playerCompiledName.containsKey(uuid)) JawaChat.playerCompiledName.remove(uuid);
         if (JawaChat.opsOnline.containsKey(uuid)) JawaChat.opsOnline.remove(uuid);
-        ChatHandler.playerQuit(player);
+        FormattingHandler.clearHashs(uuid);
+        ChatHandler.playerQuit(player.getUniqueId(), event.getQuitMessage());
         
     }
 }

@@ -1,9 +1,11 @@
 name: JawaChat
 main: jawamaster.jawachat.JawaChat
-description: Controls chat functions and supplies various administrative commands.
-version: 2.0
-api-version: 1.15
+version: ${pom.version}
+description: "Controls chat functions and supplies various administrative commands."
+author: Jawamaster (Arthur Bulin)
+api-version: 1.20
 depends: JawaPermissions, JawaCore
+
 commands:
   setnick:
     description: Used to set the player's nick name
@@ -29,8 +31,6 @@ commands:
     description: "Generates a linking code to be used with the FoxelBot discord bot"
     usage: "/discordlink"
     permission: jawachat.discordlink
-  breakcommand:
-    permission: breakcommand
     
 permissions:
   jawachat.discordlink:
@@ -51,5 +51,3 @@ permissions:
   jawachat.setnick:
     description: "Allows an admin to set the nickname of the player specified"
     default: op
-  breakcommand:
-    default: true

@@ -21,7 +21,8 @@ public class OnPlayerJoin implements Listener {
     public static void OnPlayerJoin(PlayerJoinEvent event) {
         PlayerDataObject target = PlayerManager.getPlayerDataObject(event.getPlayer());
         
-        //Access if a player is muted
-            ChatHandler.playerJoin(target);
+        //Deal with chat related items on join
+        ChatHandler.playerJoin(target, event.getJoinMessage());
+        
     }
 }

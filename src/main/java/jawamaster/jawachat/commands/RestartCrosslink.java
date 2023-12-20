@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Jawamaster (Arthur Bulin)
+ * Copyright (C) 2021 Jawamaster (Arthur Bulin)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,30 @@
  */
 package jawamaster.jawachat.commands;
 
+import jawamaster.jawachat.JawaChat;
+import jawamaster.jawachat.crosslink.CrossLinkMessageHandler;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-/** Useless test command, intentionally breaks, not used atm.
+/**
  *
  * @author Jawamaster (Arthur Bulin)
  */
-public class BreakCommand implements CommandExecutor{
+public class RestartCrosslink implements CommandExecutor{
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        System.out.println(args[100]);
+    public boolean onCommand(CommandSender commandSender, Command command, String label, String[] args) {
+        
+        
+        if (JawaChat.crosslinkEnabled) {
+            commandSender.sendMessage(ChatColor.GREEN + "> Attempting to start crosslink...");
+            CrossLinkMessageHandler.initializeCrossLinkMessageHandler(JawaChat.getCrossLinkRole(), JawaChat.getCrossLinkUUID(), JawaChat.getCrossLinkHost(), JawaChat.getCrossLinkPort());
+        } else {
+            commandSender.sendMessage(ChatColor.RED + "> Crosslink is not enabled on this server");
+        }
+        
         return true;
     }
     

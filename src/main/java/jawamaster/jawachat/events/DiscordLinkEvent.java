@@ -9,7 +9,6 @@ import java.util.UUID;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.javacord.api.entity.channel.TextChannel;
-import org.json.JSONObject;
 
 /**
  *
@@ -18,11 +17,11 @@ import org.json.JSONObject;
 public class DiscordLinkEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
-    private static Long id;
-    private static String code;
-    private static UUID uuid;
-    private static TextChannel channel;
-    private static String discordUser;
+    private Long id;
+    private String code;
+    private UUID uuid;
+    private TextChannel channel;
+    private String discordUser;
 
     /** Create an async discord link event so the info can be safely taken back into a 
      * synchronous thread via listener execution.
@@ -33,11 +32,11 @@ public class DiscordLinkEvent extends Event {
      */
     public DiscordLinkEvent(Long id, String code, UUID uuid, TextChannel channel, String discordUser) {
         super(true); //run the event Async
-        DiscordLinkEvent.id = id;
-        DiscordLinkEvent.code = code;
-        DiscordLinkEvent.uuid = uuid;
-        DiscordLinkEvent.channel = channel;
-        DiscordLinkEvent.discordUser = discordUser;
+        this.id = id;
+        this.code = code;
+        this.uuid = uuid;
+        this.channel = channel;
+        this.discordUser = discordUser;
     }
 
     @Override
@@ -53,7 +52,7 @@ public class DiscordLinkEvent extends Event {
      * @return 
      */
     public Long getID() {
-        return DiscordLinkEvent.id;
+        return id;
     }
     
     public String getCode() {
@@ -63,21 +62,21 @@ public class DiscordLinkEvent extends Event {
      * @return 
      */
     public UUID getUniqueId() {
-        return DiscordLinkEvent.uuid;
+        return uuid;
     }
 
     /** Get the Discord TextChannel that the link request was made in.
      * @return 
      */
     public TextChannel getChannel() {
-        return DiscordLinkEvent.channel;
+        return channel;
     }
     
     /** Get the discord user name who requested the link.
      * @return 
      */
     public String getDiscordUser(){
-        return DiscordLinkEvent.discordUser;
+        return discordUser;
     }
 
 }
