@@ -19,6 +19,9 @@ package jawamaster.jawachat.commands;
 import java.util.Arrays;
 import net.jawasystems.jawacore.PlayerManager;
 import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -30,13 +33,14 @@ import org.bukkit.entity.Player;
  * @author Jawamaster (Arthur Bulin)
  */
 public class PrivateMessageConversation implements CommandExecutor {
-    
+    private static final TextComponent PLAYERERRORMSG = Component.text(" > Error: That Player wasn't found either online or offline. Try using the player's actual minecraft name and not their nickname.", NamedTextColor.RED);
+    private static final TextComponent ENDCONVOERROR = Component.text(" > You must end your current conversation to start a new one. Use /pc to end your conversation.", NamedTextColor.RED);
     @Override
     public boolean onCommand(CommandSender commandSender, Command arg1, String arg2, String[] arg3) {
         PlayerDataObject player = PlayerManager.getPlayerDataObject((Player) commandSender);
         PlayerDataObject target = PlayerManager.getPlayerDataObject(arg3[0]);
         if (target == null || !target.isOnline()) { 
-            commandSender.sendMessage(ChatColor.RED + " > Error: That player is not an online player! Try their actual minecraft name instead of nickname.");
+            commandSender.sendMessage(PLAYERERRORMSG);
             return true;
         }
         if (!(commandSender instanceof Player)){
@@ -45,14 +49,17 @@ public class PrivateMessageConversation implements CommandExecutor {
         }
         
         if (player.isHavingConversation()) {
-            player.sendMessage(ChatColor.RED + " > You must end your current conversation to start a new one. Use /pc to end your conversation.");
+            player.sendMessage(ENDCONVOERROR);
         } else {
-            target.sendMessage(ChatColor.GREEN + " > Private Conversation started with " + target.getDisplayName() + ". To exit use /pc");
+            TextComponent message = Component.text(" > Private Conversation started with ", NamedTextColor.GREEN)
+                    .append(target.getFriendlyName())
+                    .append(Component.text(". To exit use /pc", NamedTextColor.GREEN));
+            target.sendMessage(message);
             
         }
         
-        target.sendMessage(ChatColor.DARK_GRAY + "[" + ChatColor.translateAlternateColorCodes('&', player.getDisplayName()) + ChatColor.DARK_GRAY + " > you]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
-        player.sendMessage(ChatColor.DARK_GRAY + "[You > " + target.getDisplayName() + ChatColor.DARK_GRAY + "]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
+//        target.sendMessage(ChatColor.DARK_GRAY + "[" + ChatColor.translateAlternateColorCodes('&', player.getDisplayName()) + ChatColor.DARK_GRAY + " > you]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
+//        player.sendMessage(ChatColor.DARK_GRAY + "[You > " + target.getDisplayName() + ChatColor.DARK_GRAY + "]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
         
         return true;
     }

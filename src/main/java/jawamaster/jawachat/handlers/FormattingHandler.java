@@ -9,10 +9,11 @@ import java.util.HashMap;
 import java.util.UUID;
 import net.jawasystems.jawacore.PlayerManager;
 import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.json.JSONObject;
 
 /**
  *
@@ -27,15 +28,7 @@ public class FormattingHandler {
         DISPLAYNAMEHASHES.remove(target);
         LISTNAMEHASHES.remove(target);
     }
-    
-    public static boolean isHashed(Player target){
-        return !(
-                !DISPLAYNAMEHASHES.containsKey(target.getUniqueId()) ||
-                (target.getDisplayName().hashCode() != DISPLAYNAMEHASHES.get(target.getUniqueId())) ||
-                !LISTNAMEHASHES.containsKey(target.getUniqueId()) ||
-                (target.getPlayerListName().hashCode() != LISTNAMEHASHES.get(target.getUniqueId())));
-    }
-    
+        
     public static void recompilePlayerName(UUID uuid){
         recompilePlayerName(Bukkit.getServer().getPlayer(uuid));
     }
@@ -49,63 +42,50 @@ public class FormattingHandler {
         compileListName(PlayerManager.getPlayerDataObject(target));
     }
     
+    /** creates a player's list and chat formatted names on user join. This is logically the same as 
+     * {@link #recompilePlayerName(org.bukkit.entity.Player) recompilePlayerName} but leverages faster lookups using
+     * already cached player data objects.
+     * @param target
+     * @param pdObject 
+     */
     public static void compilePlayerNameOnJoin(UUID target, PlayerDataObject pdObject) {
         compilePlayerName(target, pdObject);
         compileListName(pdObject);
     }
     
+    /** Compiles the player's display name and sets it. This also creates a hash of the name so that 
+     * changes to names can be tracked and used to trigger an update.
+     * @param target UUID of the player who's display name is being compiled
+     * @param pdObject the player's data object
+     */
     public static void compilePlayerName(UUID target, PlayerDataObject pdObject){
         //Player displayname compilation
-        String displayName = "";
+        TextComponent displayName = Component.empty();
 
-        if (!pdObject.getStar().equals("")) displayName += pdObject.getStar();
-        if (!pdObject.getTag().equals("")) displayName += ChatColor.translateAlternateColorCodes('&', pdObject.getTag()) + " ";
-        
-        if (!pdObject.getNickName().equals("")) displayName += ChatColor.translateAlternateColorCodes('&', pdObject.getNickName());
-        else displayName += pdObject.getRankColor() + pdObject.getName();
+        displayName.append(pdObject.getStarComponent());
+        displayName.append(pdObject.getTagComponent());
+        displayName.append(pdObject.getNickNameComponent());
+
         DISPLAYNAMEHASHES.put(target, displayName.hashCode());
-        pdObject.getPlayer().setDisplayName(displayName);
-        //pdObject.setCompiledName(displayName);
-
+        pdObject.getPlayer().displayName(displayName);
     }
     
     /** Compiles the player listname from the given information.
      * @param pdObject 
      */
     public static void compileListName(PlayerDataObject pdObject){
-        //Player listname compilation
-        String listName = "";
-        if (pdObject.getNickName().equals("")){
-            listName = pdObject.getRankColor() + pdObject.getName();
+        TextComponent listName = Component.empty();
+
+        if (pdObject.hasNickName()) {
+            listName.append(pdObject.getFriendlyName());
+            listName.append(Component.text(" > ", NamedTextColor.WHITE));
+            listName.append(pdObject.getColoredName());
         } else {
-            listName =
-                    pdObject.getRankColor() + 
-                    pdObject.getFriendlyName() + 
-                    ChatColor.WHITE + "> " + 
-                    pdObject.getRankColor() + 
-                    pdObject.getName();
+            listName.append(pdObject.getColoredName());
         }
         LISTNAMEHASHES.put(pdObject.getUniqueID(), listName.hashCode());
-        pdObject.getPlayer().setPlayerListName(listName);
+        pdObject.getPlayer().playerListName(listName);
     }
     
-    /** Compile the string containing stars for the user's name.
-     * @param starData
-     * @return 
-     */
-    public static String buildStar(JSONObject starData){
-        String star = "";
-        if (starData.getBoolean("promote")) {
-            star += ChatColor.GREEN + "*";
-        }
-        if (starData.getBoolean("probation")) {
-            star += ChatColor.RED + "*";
-        }
-        if (starData.getBoolean("consult")) {
-            star += ChatColor.YELLOW + "*";
-        }
-        
-        return star;
-    }
-    
+
 }

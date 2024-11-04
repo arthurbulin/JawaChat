@@ -31,10 +31,10 @@ public class CrossLinkMessageReceived extends Event{
     private static final HandlerList handlers = new HandlerList();
     
     public CrossLinkMessageReceived (CrossLinkMessage message){
-        //super(true);
-        System.out.println("CrossLinkMessageReceived Event");
-        //message.getChatMessage().getMessage();
-        System.out.println(message.getChatMessage());
+//        //super(true);
+//        System.out.println("CrossLinkMessageReceived Event");
+//        //message.getChatMessage().getMessage();
+//        System.out.println(message.getChatMessage());
         //ChatHandler.broadcast(message.getChatMessage());
     }
     

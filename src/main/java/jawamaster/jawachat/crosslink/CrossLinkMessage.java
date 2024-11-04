@@ -18,10 +18,9 @@ package jawamaster.jawachat.crosslink;
 
 import java.io.Serializable;
 import java.util.UUID;
-import jawamaster.jawachat.handlers.ChatHandler;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 
 /**
  *
@@ -111,21 +110,39 @@ public class CrossLinkMessage implements Serializable {
      * @param dividerString
      * @param message 
      */
-    public void setChatMessage(String playerName, String playerDisplayName, String predicatePrefix, String dividerString, String message){
+    public void setChatMessage(String playerName, TextComponent playerDisplayName, TextComponent predicatePrefix, TextComponent dividerString, TextComponent message){
         this.playerName = playerName;
-        this.playerDisplayName = playerDisplayName;
-        this.predicatePrefix = predicatePrefix;
-        this.dividerString = dividerString;
-        this.message = message;
+        this.playerDisplayName = JSONComponentSerializer.json().serialize(playerDisplayName);
+        this.predicatePrefix = JSONComponentSerializer.json().serialize(predicatePrefix);
+        this.dividerString = JSONComponentSerializer.json().serialize(dividerString);
+        this.message = JSONComponentSerializer.json().serialize(message);
     }
     
+//    /** This assembles a chat message and returns the BaseComponent[] to the requester.
+//     * This will not work unless the type is CHAT* message.
+//     * @return 
+//     */
+//    public BaseComponent[] getChatMessage(){
+//        if (type.equals(MESSAGETYPE.CHATGENERAL) || type.equals(MESSAGETYPE.CHATOP)){
+//            return ChatHandler.assembleChatMessage(MessageHandler.createNamePredicate(playerName, playerDisplayName, predicatePrefix, dividerString, ChatColor.WHITE), message);
+//        } else {
+//            return null;
+//        }
+//    }
+        
     /** This assembles a chat message and returns the BaseComponent[] to the requester.
      * This will not work unless the type is CHAT* message.
      * @return 
      */
-    public BaseComponent[] getChatMessage(){
+    public TextComponent getChatMessage(){
         if (type.equals(MESSAGETYPE.CHATGENERAL) || type.equals(MESSAGETYPE.CHATOP)){
-            return ChatHandler.assembleChatMessage(ChatHandler.createNamePredicate(playerName, playerDisplayName, predicatePrefix, dividerString, ChatColor.WHITE), message);
+            TextComponent assembledMessage = Component.empty()
+                    .append(getPredicatePrefix())
+                    .append(getPlayerDisplayName())
+                    .append(getDivider())
+                    .append(getMessage());
+            return assembledMessage;
+//            return ChatHandler.assembleChatMessage(MessageHandler.createNamePredicate(playerName, playerDisplayName, predicatePrefix, dividerString, ChatColor.WHITE), message);
         } else {
             return null;
         }
@@ -142,10 +159,8 @@ public class CrossLinkMessage implements Serializable {
     /** Get the message from the INFOBROADCAST message.
      * @return 
      */
-    public BaseComponent[] getInfoBroadcast(){
-        BaseComponent[] msgComp = new ComponentBuilder(message)
-                .create();
-        return msgComp;
+    public TextComponent getInfoBroadcast(){
+        return Component.text(message);
     }
     
     /** Set the message to broadcast on the remote server.
@@ -163,4 +178,19 @@ public class CrossLinkMessage implements Serializable {
     }
 
     
+    private TextComponent getPlayerDisplayName() {
+        return (TextComponent) JSONComponentSerializer.json().deserialize(this.playerDisplayName);
+    }
+    
+    private TextComponent getPredicatePrefix() {
+        return (TextComponent) JSONComponentSerializer.json().deserialize(this.predicatePrefix);
+    }
+    
+    private TextComponent getMessage() {
+        return (TextComponent) JSONComponentSerializer.json().deserialize(this.message);
+    }
+    
+    private TextComponent getDivider() {
+        return (TextComponent) JSONComponentSerializer.json().deserialize(this.dividerString);
+    }
 }

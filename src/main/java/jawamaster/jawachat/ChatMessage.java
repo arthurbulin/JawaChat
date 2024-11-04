@@ -27,21 +27,21 @@ import org.bukkit.entity.Player;
  * @author Jawamaster (Arthur Bulin)
  */
 public class ChatMessage {
-    private final UUID PLAYERUUID;
-    private final String PLAYERFRIENDLYNAME;
-    private final String PLAYERTAG;
-    private final int PLAYERIMMUNITY;
-    private final String MESSAGE;
-    private final String CHANNEL;
+//    private final UUID PLAYERUUID;
+//    private final String PLAYERFRIENDLYNAME;
+//    private final String PLAYERTAG;
+//    private final int PLAYERIMMUNITY;
+//    private final String MESSAGE;
+//    private final String CHANNEL;
     
-    public ChatMessage(Player player, String message, String channel){
-        this.PLAYERUUID = player.getUniqueId();
-        this.CHANNEL = channel;
-        this.MESSAGE = message;
-        
-        PlayerDataObject pdo = PlayerManager.getPlayerDataObject(player);
-        this.PLAYERFRIENDLYNAME = pdo.getFriendlyName();
-        this.PLAYERTAG = pdo.getTag();
-        this.PLAYERIMMUNITY = PermissionsHandler.getImmunity(pdo.getRank());
-    }
+//    public ChatMessage(Player player, String message, String channel){
+//        this.PLAYERUUID = player.getUniqueId();
+//        this.CHANNEL = channel;
+//        this.MESSAGE = message;
+//        
+//        PlayerDataObject pdo = PlayerManager.getPlayerDataObject(player);
+//        this.PLAYERFRIENDLYNAME = pdo.getFriendlyName();
+//        this.PLAYERTAG = pdo.getTag();
+//        this.PLAYERIMMUNITY = PermissionsHandler.getImmunity(pdo.getRank());
+//    }
 }

@@ -20,18 +20,18 @@ import java.util.stream.Collectors;
 import jawamaster.jawachat.JawaChat;
 import jawamaster.jawachat.crosslink.CrossLinkMessageHandler;
 import jawamaster.jawachat.crosslink.CrossLinkMessage;
-import net.jawasystems.jawacore.JawaCore;
+import jawamaster.jawachat.handlers.MessageHandler;
 import net.jawasystems.jawacore.PlayerManager;
 import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
 import net.jawasystems.jawacore.handlers.ESHandler;
 import net.jawasystems.jawacore.utils.ESRequestBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.json.JSONObject;
@@ -44,6 +44,9 @@ public class ChatHandler {
     
     private static final Map<Player,Player> REPLIES = new HashMap();
     private static final HashSet<UUID> MUTED = new HashSet();
+    private static final TextComponent OPCHATPREFIX = Component.text("[OP]", NamedTextColor.YELLOW);
+    private static final TextComponent DEFAULTDIVIDER = Component.text(": ", NamedTextColor.WHITE);
+    private static final TextComponent MUTEDPREFIX = Component.text("[Muted]", NamedTextColor.RED);
 //    private static HashMap<Player, JSONObject> chatTrack = new HashMap();
 //    private static HashMap<String, Pattern> patterns = new HashMap();
     
@@ -51,41 +54,66 @@ public class ChatHandler {
      * @param player
      * @param message 
      */
-    public static void opChat(Player player, String message) {
+    public static void opChat(Player player, String[] message) {
         //remove the # from the message
-        String replaceFirst =  message.substring(1);
+//        String replaceFirst =  message.substring(1);
+        PlayerDataObject PDO = PlayerManager.getPlayerDataObject(player);
+//        BaseComponent[] baseComp = assembleChatMessage(MessageHandler.createNamePredicate(player.getName(), player.getDisplayName(), ChatColor.YELLOW + "[OP] " + ChatColor.RESET, ":", ChatColor.WHITE), replaceFirst);
+//        TextComponent messageComponent = MessageHandler.prepareMessageComponent(message);
+//        TextComponent predicate = MessageHandler.createNamePredicate(PDO, OPCHATPREFIX, DEFAULTDIVIDER);
+        TextComponent assembledMessage = Component.empty()
+                .append(MessageHandler.createNamePredicate(PDO, OPCHATPREFIX, DEFAULTDIVIDER))
+                .append(MessageHandler.prepareMessageComponent(message));
         
-        BaseComponent[] baseComp = assembleChatMessage(createNamePredicate(player.getName(), player.getDisplayName(), ChatColor.YELLOW + "[OP] " + ChatColor.RESET, ":", ChatColor.WHITE), replaceFirst);
-        
-        if (JawaChat.crosslinkEnabled) {
-            CrossLinkMessage clMessage = new CrossLinkMessage(CrossLinkMessageHandler.getUUID(), CrossLinkMessage.MESSAGETYPE.CHATOP, JawaChat.getServerName());
-            clMessage.setChatMessage(player.getName(), player.getDisplayName(), ChatColor.YELLOW + "[OP] " + ChatColor.RESET, ":", replaceFirst);
-            CrossLinkMessageHandler.sendMessage(clMessage);
-        }
-        
-        opBroadcast(baseComp);
+        //FIXME Disabling opchat for crosslink cause I don't want to rebuild Crosslink right now
+//        if (JawaChat.crosslinkEnabled) {
+//            CrossLinkMessage clMessage = new CrossLinkMessage(CrossLinkMessageHandler.getUUID(), CrossLinkMessage.MESSAGETYPE.CHATOP, JawaChat.getServerName());
+//            clMessage.setChatMessage(player.getName(), player.getDisplayName(), ChatColor.YELLOW + "[OP] " + ChatColor.RESET, ":", replaceFirst);
+//            CrossLinkMessageHandler.sendMessage(clMessage);
+//        }
+        opBroadcast(assembledMessage);
     }
     
     /** Send a player message through the general channel.
      * @param player
      * @param message 
      */
-    public static void generalChat(Player player, String message) {
-        BaseComponent[] baseComp = assembleChatMessage(createNamePredicate(player.getName(), player.getDisplayName(), "", ":", ChatColor.WHITE), message);
+    public static void generalChat(Player player, String[] message) {
+//        BaseComponent[] baseComp = assembleChatMessage(MessageHandler.createNamePredicate(player.getName(), player.getDisplayName(), "", ":", ChatColor.WHITE), message);
+        PlayerDataObject PDO = PlayerManager.getPlayerDataObject(player);
+        TextComponent assembledMessage = Component.empty()
+                .append(PDO.getStarComponent())
+                .append(PDO.getTagComponent())
+                .append(PDO.getFriendlyName())
+                .append(DEFAULTDIVIDER)
+                .append(MessageHandler.prepareMessageComponent(message));
         
+        //FIXME Need to rebuild crosslink but this works since it never used BaseComponents anyway
         if (JawaChat.crosslinkEnabled) {
             CrossLinkMessage clMessage = new CrossLinkMessage(CrossLinkMessageHandler.getUUID(), CrossLinkMessage.MESSAGETYPE.CHATGENERAL, JawaChat.getServerName());
-            clMessage.setChatMessage(player.getName(), player.getDisplayName(), "", ":", message);
+            clMessage.setChatMessage(player.getName(), PDO.getDisplayName(), Component.empty(), DEFAULTDIVIDER, MessageHandler.prepareMessageComponent(message));
             CrossLinkMessageHandler.sendMessage(clMessage);
         }
         
-        broadcast(baseComp);
+        broadcast(assembledMessage);
     }
     
-    public static void mutedChat(Player player, String message){
-        BaseComponent[] toOperators = assembleChatMessage(createNamePredicate(player.getName(), player.getDisplayName(), ChatColor.RED + "[Muted] " + ChatColor.RESET, ":", ChatColor.WHITE), message);
-        BaseComponent[] toMutedPlayer = assembleChatMessage(createNamePredicate(player.getName(), player.getDisplayName(), "", ":", ChatColor.WHITE), message);
-        player.spigot().sendMessage(toMutedPlayer);
+    public static void mutedChat(Player player, String[] message){
+        PlayerDataObject PDO = PlayerManager.getPlayerDataObject(player);
+//        BaseComponent[] toOperators = assembleChatMessage(MessageHandler.createNamePredicate(player.getName(), player.getDisplayName(), ChatColor.RED + "[Muted] " + ChatColor.RESET, ":", ChatColor.WHITE), message);
+        TextComponent messageComponent = MessageHandler.prepareMessageComponent(message);
+        TextComponent toOperators = Component.empty()
+                .append(MessageHandler.createNamePredicate(PDO, MUTEDPREFIX, DEFAULTDIVIDER))
+                .append(messageComponent);
+        
+//        BaseComponent[] toMutedPlayer = assembleChatMessage(MessageHandler.createNamePredicate(player.getName(), player.getDisplayName(), "", ":", ChatColor.WHITE), message);
+        TextComponent toMutedPlayer = Component.empty()
+                .append(PDO.getStarComponent())
+                .append(PDO.getTagComponent())
+                .append(PDO.getFriendlyName())
+                .append(DEFAULTDIVIDER)
+                .append(MessageHandler.prepareMessageComponent(message));
+        player.sendMessage(toMutedPlayer);
         opBroadcast(toOperators);
     }
     
@@ -97,176 +125,87 @@ public class ChatHandler {
     public static void privateMessage(Player fromPlayer, Player toPlayer, String[] message) {
         PlayerDataObject fromPDO = PlayerManager.getPlayerDataObject(fromPlayer);
         PlayerDataObject toPDO = PlayerManager.getPlayerDataObject(toPlayer);
-        //target.sendMessage(ChatColor.DARK_GRAY + "[" + player.getFriendlyName() + ChatColor.DARK_GRAY + " > you]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
-        //player.sendMessage(ChatColor.DARK_GRAY + "[You > " + target.getDisplayName() + ChatColor.DARK_GRAY + "]: " + ChatColor.WHITE + String.join(" ", Arrays.copyOfRange(arg3, 1, arg3.length)).trim());
-        ComponentBuilder toComp = new ComponentBuilder(ChatColor.DARK_GRAY + "[" + fromPDO.getFriendlyName() + ChatColor.DARK_GRAY + " > you]" + ChatColor.WHITE + ":");
-            toComp.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("PM " + fromPDO.getPlainNick())));
-            toComp.event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pm " + fromPDO.getName() + " "));
-            toComp.append(" ").reset();
-            
-        ComponentBuilder fromComp = new ComponentBuilder(ChatColor.DARK_GRAY + "[You > " + toPDO.getDisplayName() + ChatColor.DARK_GRAY + "]" + ChatColor.WHITE + ":");
-            fromComp.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("PM " + toPDO.getPlainNick())));
-            fromComp.event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pm " + toPDO.getName() + " "));
-            fromComp.append(" ").reset();
-            
-        TextComponent messageComp = new TextComponent();
-        for (String part : message) {
-            if (part.matches("^.*(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|].*$")) {
-                messageComp.addExtra(assembleURLComponent(part));
-                messageComp.addExtra(" ");
-            } else {
-                messageComp.addExtra(part + " ");
-            }
-        }
         
-        BaseComponent[] toMSG = toComp
-                .append(messageComp)
-                .create();
-        BaseComponent[] fromMsg = fromComp
-                .append(messageComp)
-                .create();
-        
-        toPDO.sendMessageIf(toMSG);
-        fromPDO.sendMessageIf(fromMsg);
+        TextComponent messageComponent = MessageHandler.prepareMessageComponent(message);
+        toPlayer.sendMessage(MessageHandler.assemblePrivateMessage("["," > you]",fromPDO,messageComponent));
+        toPlayer.sendMessage(MessageHandler.assemblePrivateMessage("[ you > ","]",toPDO,messageComponent));
     }
     
-    /** Create the formatted player predicate for all player sent messages.
-     * @param playerName
-     * @param playerDisplayName
-     * @param predicatePrefix
-     * @param dividerString
-     * @param dividerColor
-     * @return 
-     */
-    public static ComponentBuilder createNamePredicate(String playerName, String playerDisplayName, String predicatePrefix, String dividerString, ChatColor dividerColor){
-        
-        //Generate the name portion of the predicate and affix any prefixes i.e. [op]
-        TextComponent form = new TextComponent(predicatePrefix + playerDisplayName);
-            form.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pm " + playerName + " "));
-            form.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("/pm " + playerName)));
-
-        //Generate the divider component. The color specified will also be the base color for the rest of the message
-        TextComponent divider = new TextComponent(dividerString);
-        divider.setColor(dividerColor);
-
-        //Append all of the parts into a single ComponentBuilder for other additions
-        ComponentBuilder baseComp = new ComponentBuilder()
-                .append(form)
-                .append(divider)
-                .append(" ").reset();
-
-        return baseComp;
-    }
+//    
+//    /** Assembles a chat message and resolves urls.
+//     * @param baseComp
+//     * @param message
+//     * @return 
+//     */
+//    public static BaseComponent[] assembleChatMessage(ComponentBuilder baseComp, String message){
+//        
+//        //Evaluate if the string contains a url matching the regex below
+//        if (message.matches("^.*(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|].*$")) {
+//            
+//            //Split the string into parts
+//            String[] messages = message.split(" ");
+//
+//            /*
+//                Test each part to see if it is the url, if not, append it to baseComp with a trailing space. If it is the url
+//                then create a new text component and create the clickable link and add the popup text
+//            */
+//            for (String part : messages) {
+//                if (part.matches("^.*(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|].*$")) {
+//                    baseComp.append(MessageHandler.assembleURLComponent(part));
+//                    baseComp.append(" ").reset();
+//                } else {
+//                    baseComp.append(part + " ");
+//                }
+//            }
+//        } else {
+//            baseComp.append(message)
+//                    .color(ChatColor.WHITE);
+//        }
+//        
+//        return baseComp.create();
+//    }
     
-    /** Assembles a chat message and resolves urls.
-     * @param baseComp
-     * @param message
-     * @return 
-     */
-    public static BaseComponent[] assembleChatMessage(ComponentBuilder baseComp, String message){
-        
-        //Evaluate if the string contains a url matching the regex below
-        if (message.matches("^.*(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|].*$")) {
-            
-            //Split the string into parts
-            String[] messages = message.split(" ");
-
-            /*
-                Test each part to see if it is the url, if not, append it to baseComp with a trailing space. If it is the url
-                then create a new text component and create the clickable link and add the popup text
-            */
-            for (String part : messages) {
-                if (part.matches("^.*(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|].*$")) {
-                    baseComp.append(assembleURLComponent(part));
-                    baseComp.append(" ").reset();
-                } else {
-                    baseComp.append(part + " ");
-                }
-            }
-        } else {
-            baseComp.append(message)
-                    .color(ChatColor.WHITE);
-        }
-        
-        return baseComp.create();
-    }
-    
-    /** Return a TextComponent for a URL. 
-     * @param urlPart
-     * @return 
-     */
-    public static TextComponent assembleURLComponent(String urlPart) {
-        TextComponent urlComp = new TextComponent(urlPart);
-                    urlComp.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, urlPart));
-                    urlComp.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("Open Link")));
-                    urlComp.setUnderlined(Boolean.TRUE);
-        return urlComp;
-    }
     
     /** Transmit a message to all online players.
-     * @param baseComp 
+     * @param message 
      */
-    public static void broadcast(BaseComponent[] baseComp){
+    public static void broadcast(TextComponent message){
         Bukkit.getServer().getOnlinePlayers().forEach((target) -> {
-            target.spigot().sendMessage(baseComp);
+            target.sendMessage(message);
         });
-                String logmsg = "";
-        for (BaseComponent comp : baseComp){
-            logmsg += comp.toPlainText();
-        }
-        logMessageToConsole(logmsg, "general");
+        logMessageToConsole(PlainTextComponentSerializer.plainText().serialize(message), "general");
     }
     
     /** Transmit a message that originates outside of the server instance to all
      * online players.
      * @param serverName The name of the server that originates the message
-     * @param baseComp The baseComponent portion of this message
+     * @param message
      */
-    public static void broadcast(String serverName, BaseComponent[] baseComp){
-        BaseComponent[] comp = new ComponentBuilder(ChatColor.GREEN + "[" + serverName + "]")
-                .append(baseComp)
-                .create();
-        Bukkit.getServer().getOnlinePlayers().forEach((target) -> {
-            target.spigot().sendMessage(comp);
-        });
-        String logmsg = "";
-        for (BaseComponent compp : comp){
-            logmsg += compp.toPlainText();
-        }
-        logMessageToConsole(logmsg, "general");
+    public static void broadcast(String serverName, TextComponent message){
+        TextComponent messageComponent = Component.text("[".concat(serverName).concat("]"), NamedTextColor.GREEN)
+                .append(message);
+        broadcast(messageComponent);
     }
 
-    /** Transmit a BaseComponent[] message to all online player with opchat permission.
-     * @param baseComp The BaseComponent[] that makes up this message
+    /** Transmit a message to all online player with opchat permission.
+     * @param message
      */
-    public static void opBroadcast(BaseComponent[] baseComp){
+    public static void opBroadcast(TextComponent message){
         JawaChat.opsOnline.values().forEach((target) -> {
-                    target.spigot().sendMessage(baseComp);
+                    target.sendMessage(message);
         });
-        String logmsg = "";
-        for (BaseComponent comp : baseComp){
-            logmsg += comp.toPlainText();
-        }
-        logMessageToConsole(logmsg, "op channel");
+        logMessageToConsole(PlainTextComponentSerializer.plainText().serialize(message), "op channel");
     }
     
     /** Transmit a BaseComponent[] message with origins outside the server instance 
      * to all online players with the opchat permission.
      * @param serverName The name of the server that originates the message
-     * @param baseComp The baseComponent portion of this message
+     * @param message
      */
-    public static void opBroadcast(String serverName, BaseComponent[] baseComp){
-        BaseComponent[] comp = new ComponentBuilder(ChatColor.GREEN + "[" + serverName + "]")
-                .append(baseComp)
-                .create();
-        JawaChat.opsOnline.values().forEach((target) -> {
-                    target.spigot().sendMessage(comp);
-        });
-        String logmsg = "";
-        for (BaseComponent compp : comp){
-            logmsg += compp.toPlainText();
-        }
-        logMessageToConsole(logmsg, "op channel");
+    public static void opBroadcast(String serverName, TextComponent message){
+        TextComponent messageComponent = Component.text("[".concat(serverName).concat("]"), NamedTextColor.GREEN)
+                .append(message);
+        opBroadcast(messageComponent);
     }
     
     /** Transmit a String message to all online players with the opchat permission.

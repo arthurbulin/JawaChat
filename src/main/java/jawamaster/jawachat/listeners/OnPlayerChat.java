@@ -39,7 +39,7 @@ public class OnPlayerChat implements Listener {
         if (event.getMessage().startsWith("#")) {
             type = "opchat";
             if (JawaChat.opsOnline.containsKey(event.getPlayer().getUniqueId()) || event.getPlayer().hasPermission("jawachat.opchat")){
-                ChatHandler.opChat(event.getPlayer(), event.getMessage());
+                ChatHandler.opChat(event.getPlayer(), event.getMessage().replaceFirst("^#", "").split(" "));
             } else {
                 event.getPlayer().sendMessage(ChatColor.RED + "You do not have permission to perform that function.");
                 muted = true;
@@ -47,16 +47,16 @@ public class OnPlayerChat implements Listener {
         } 
         //If the user identifies @staff
         else if (event.getMessage().contains("@staff")){
-            ChatHandler.generalChat(event.getPlayer(), event.getMessage());
+            ChatHandler.generalChat(event.getPlayer(), event.getMessage().split(" "));
             JawaChat.getFoxelBot().notifyStaff(event.getPlayer(), event.getMessage());
         } 
         //If the user is muted
         else if (ChatHandler.isMuted(event.getPlayer().getUniqueId())){
-            ChatHandler.mutedChat(event.getPlayer(), event.getMessage());
+            ChatHandler.mutedChat(event.getPlayer(), event.getMessage().split(" "));
         } 
         //General chat with no specific conditions
         else {
-            ChatHandler.generalChat(event.getPlayer(), event.getMessage());
+            ChatHandler.generalChat(event.getPlayer(), event.getMessage().split(" "));
         }
         
         //If enabled log to the datastream

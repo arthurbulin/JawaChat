@@ -18,11 +18,11 @@ package jawamaster.jawachat.commands;
 
 import net.jawasystems.jawacore.PlayerManager;
 import net.jawasystems.jawacore.dataobjects.PlayerDataObject;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -33,24 +33,31 @@ import org.bukkit.entity.Player;
  * @author Jawamaster (Arthur Bulin)
  */
 public class DiscordLink implements CommandExecutor {
-
+    private static final TextComponent LINKED = Component.text("> You are linked to discord as ", NamedTextColor.GREEN);
+    private static final TextComponent CODE = Component.text("> Click to copy the link command and PM FoxelBot on discord with the following message: ", NamedTextColor.GREEN);
+    private static final TextComponent PLAYERERRORMSG = Component.text(" > Error: That Player wasn't found either online or offline. Try using the player's actual minecraft name and not their nickname.", NamedTextColor.RED);
+    private static final TextComponent PLAYERNOTLINKED = Component.text(" > That user is not linked to Discord.", NamedTextColor.RED);
+    
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String label, String[] args) {
         PlayerDataObject pdObject = PlayerManager.getPlayerDataObject((Player) commandSender);
 
         if (args == null || args.length == 0) {
             if (pdObject.isDiscordLinked()) {
-                commandSender.sendMessage(ChatColor.GREEN + "> You are linked to discord as " + pdObject.getDiscordName());
+                TextComponent linked = Component.empty()
+                        .append(LINKED)
+                        .append(Component.text(pdObject.getDiscordName(), NamedTextColor.GREEN));
+                commandSender.sendMessage(linked);
             } else {
                 //String discordCode = pdObject.generateDiscordCode();
                 String discordCode = pdObject.generateDiscordCode();
                 PlayerManager.putPlayerCode(discordCode, ((Player) commandSender).getUniqueId());
-                BaseComponent[] message = new ComponentBuilder("> Click to copy the link command and PM FoxelBot on discord with the following message: ").color(ChatColor.GREEN)
-                        .append(discordCode).color(ChatColor.WHITE)
-                        .event(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "!FoxelBot link " + discordCode))
-                        .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Copy Discord Link Command").create()))
-                        .create();
-                commandSender.spigot().sendMessage(message);
+                TextComponent message = Component.empty()
+                        .append(CODE)
+                        .append(Component.text(discordCode, NamedTextColor.WHITE))
+                        .clickEvent(ClickEvent.copyToClipboard("!FoxelBot link ".concat(discordCode)))
+                        .hoverEvent(HoverEvent.showText(Component.text("!FoxelBot link ".concat(discordCode))));
+                commandSender.sendMessage(message);
             }
         } else {
             
@@ -67,21 +74,26 @@ public class DiscordLink implements CommandExecutor {
     private boolean resolveInfo(String[] args, CommandSender commandSender) {
         PlayerDataObject target = resolvePlayer(args, commandSender);
         if (target == null) {
-            commandSender.sendMessage(ChatColor.RED + "> Error: That player is not found! Try their actual minecraft name instead of nickname.");
+            commandSender.sendMessage(PLAYERERRORMSG);
             return true;
         }
         if (!target.isDiscordLinked()){
-            commandSender.sendMessage(ChatColor.RED + "> That user is not linked to discord.");
+            commandSender.sendMessage(PLAYERNOTLINKED);
             return true;
         }
         
-        BaseComponent[] baseComp = new ComponentBuilder("> User, ").color(ChatColor.GREEN)
+        TextComponent message = Component.text("> User, ", NamedTextColor.GREEN)
                 .append(target.getFriendlyName())
-                .append(" is linked to Discord with username ").color(ChatColor.GREEN)
-                .append(target.getDiscordName())
-                .create();
-        
-        commandSender.spigot().sendMessage(baseComp);
+                .append(Component.text(" , is linked to Discord with username ", NamedTextColor.GREEN))
+                .append(Component.text(target.getDiscordName(), NamedTextColor.GRAY));
+        commandSender.sendMessage(message);
+//        BaseComponent[] baseComp = new ComponentBuilder("> User, ").color(ChatColor.GREEN)
+//                .append(target.getFriendlyName())
+//                .append(" is linked to Discord with username ").color(ChatColor.GREEN)
+//                .append(target.getDiscordName())
+//                .create();
+//        
+//        commandSender.spigot().sendMessage(baseComp);
         return true;
                
     }
